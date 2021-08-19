@@ -9,6 +9,14 @@ class SingleArmEnv(ManipulationEnv):
     """
     A manipulation environment intended for a single robot arm.
     """
+    def _default_hparams(self):
+        parent_params = super()._default_hparams()
+        parent_params.add_hparam('viewer_image_height', 480)
+        parent_params.add_hparam('viewer_image_width', 640)
+        parent_params.add_hparam('ncam', 1)
+
+        return parent_params
+
     def _load_model(self):
         """
         Verifies correct robot model is loaded

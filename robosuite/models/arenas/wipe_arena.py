@@ -122,8 +122,12 @@ class WipeArena(TableArena):
             site_id = sim.model.site_name2id(marker.sites[0])
             # Determine new position for this marker
             position = np.array([pos[0], pos[1], self.table_half_size[2]])
+            # print("pos: ",position)
             # Set the current marker (body) to this new position
             sim.model.body_pos[body_id] = position
+
+            # sim.model.body_pos[body_id] = [np.cos(body_id)/10, np.sin(body_id)/10, 0.025]
+
             # Reset the marker visualization -- setting geom rgba alpha value to 1
             sim.model.geom_rgba[geom_id][3] = 1
             # Hide the default visualization site

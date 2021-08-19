@@ -105,29 +105,33 @@ class OperationalSpaceController(Controller):
     """
 
     def __init__(self,
-                 sim,
-                 eef_name,
-                 joint_indexes,
-                 actuator_range,
-                 input_max=1,
-                 input_min=-1,
-                 output_max=(0.05, 0.05, 0.05, 0.5, 0.5, 0.5),
-                 output_min=(-0.05, -0.05, -0.05, -0.5, -0.5, -0.5),
-                 kp=150,
-                 damping_ratio=1,
-                 impedance_mode="fixed",
-                 kp_limits=(0, 300),
+                 sim,   # (MjSim)模拟器实例，该控制器将从以下方面获取机器人的状态更新
+                 eef_name,  # (str)受控机器人手臂末端效应器的名称
+                 joint_indexes,     # (dict)每个键包含相关机器人关节信息的模拟参考索引
+                                    # :''joints'': (list)相关机器人关节的索引列表
+                                    # :`'qpos'': (list)相关机器人关节位置的索引列表
+                                    # :`'qvel'': (list)相关机器人关节速度的索引列表
+                 actuator_range,    # (2-tuple of array of float)2-元组（low，high）代表机器人关节执行器范围
+                 input_max=1,       # (scalar or list)输入的动作将被剪切的最大限度(scalar or list)
+                 input_min=-1,      # (scalar or list)输入的动作将被剪切的最小值
+                 output_max=(0.05, 0.05, 0.05, 0.5, 0.5, 0.5),  # (scalar or list)缩放输入动作时定义缩放范围上限的最大值
+                 output_min=(-0.05, -0.05, -0.05, -0.5, -0.5, -0.5),    # (scalar or list)
+                 kp=150,    # (scalar or list)用于根据位置/轨道误差确定所需扭矩的位置增益
+                 damping_ratio=1,   # (scalar or list)与kp一起使用，以确定速度增益，用于根据关节位置误差确定所需扭矩。确定基于关节位置误差的期望扭矩
+                 impedance_mode="fixed",    # (str)
+                 kp_limits=(0, 300),    # (2-list of float or 2-list of Iterable of floats)
                  damping_ratio_limits=(0, 100),
-                 policy_freq=20,
-                 position_limits=None,
+                 policy_freq=20,    # 机器人策略中的行动被输入该控制器的频率
+                 position_limits=None,      #
                  orientation_limits=None,
                  interpolator_pos=None,
                  interpolator_ori=None,
-                 control_ori=True,
-                 control_delta=True,
-                 uncouple_pos_ori=True,
+                 control_ori=True,      # 输入的动作是同时控制位置和方向，还是只控制位置
+                 control_delta=True,    # 是否使用delta或绝对命令来控制机器人
+                 uncouple_pos_ori=True,     # 是否将用于控制位置的扭矩和用于控制轨道的扭矩脱钩？
                  **kwargs # does nothing; used so no error raised when dict is passed with extra terms used previously
                  ):
+
 
         super().__init__(
             sim,
@@ -204,9 +208,9 @@ class OperationalSpaceController(Controller):
 
         Note that @action expected to be in the following format, based on impedance mode!
 
-            :Mode `'fixed'`: [joint pos command]
-            :Mode `'variable'`: [damping_ratio values, kp values, joint pos command]
-            :Mode `'variable_kp'`: [kp values, joint pos command]
+            :Mode `'fixed'`: [joint pos command]    3 or 6
+            :Mode `'variable'`: [damping_ratio values, kp values, joint pos command]    6*2 + 3 or 6
+            :Mode `'variable_kp'`: [kp values, joint pos command]   6 + 3 or 6
 
         Args:
             action (Iterable): Desired relative joint position goal state

@@ -16,6 +16,7 @@ import robosuite as suite
 def test_all_environments():
 
     envs = sorted(suite.ALL_ENVIRONMENTS)
+    print(envs)
     for env_name in envs:
         # Create config dict
         env_config = {"env_name": env_name}

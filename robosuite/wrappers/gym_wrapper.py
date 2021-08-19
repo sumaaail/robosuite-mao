@@ -34,20 +34,23 @@ class GymWrapper(Wrapper, Env):
 
         # Get reward range
         self.reward_range = (0, self.env.reward_scale)
-
+        self.imag_obs =   None
         if keys is None:
             keys = []
             # Add object obs if requested
             if self.env.use_object_obs:
                 keys += ["object-state"]
             # Add image obs if requested
+            cameras = []
             if self.env.use_camera_obs:
-                keys += [f"{cam_name}_image" for cam_name in self.env.camera_names]
+                cameras = [f"{cam_name}_image" for cam_name in self.env.camera_names]
+                keys += cameras
+                print("cameras: {}".format(cameras))
             # Iterate over all robots to add to state
             for idx in range(len(self.env.robots)):
                 keys += ["robot{}_proprio-state".format(idx)]
         self.keys = keys
-
+        self.cameras = cameras
         # Gym specific attributes
         self.env.spec = None
         self.metadata = None
@@ -61,7 +64,7 @@ class GymWrapper(Wrapper, Env):
         low = -high
         self.observation_space = spaces.Box(low=low, high=high)
         low, high = self.env.action_spec
-        self.action_space = spaces.Box(low=low, high=high)
+        self.action_space = spaces.Box(low=low, high=high, dtype=np.float32)
 
     def _flatten_obs(self, obs_dict, verbose=False):
         """
@@ -75,8 +78,9 @@ class GymWrapper(Wrapper, Env):
             np.array: observations flattened into a 1d array
         """
         ob_lst = []
+        # print("kes: {}".format(self.keys))
         for key in self.keys:
-            if key in obs_dict:
+            if key in obs_dict and key not in self.cameras:
                 if verbose:
                     print("adding key: {}".format(key))
                 ob_lst.append(np.array(obs_dict[key]).flatten())
@@ -90,7 +94,18 @@ class GymWrapper(Wrapper, Env):
             np.array: Flattened environment observation space after reset occurs
         """
         ob_dict = self.env.reset()
+        imglist = []
+        if self.env.use_camera_obs:
+
+            for camera in self.cameras:
+                imglist.append(np.array(ob_dict[camera]))
+        # print("ob_dict len: {}\nob_dict: {}".format(len(ob_dict), ob_dict))
+        # only one camera so self.image_obs = imglist[0]
+        self.imag_obs = imglist
         return self._flatten_obs(ob_dict)
+
+    def get_imginfo(self):
+        return self.imag_obs[0]
 
     def step(self, action):
         """
@@ -107,7 +122,14 @@ class GymWrapper(Wrapper, Env):
                 - (bool) whether the current episode is completed or not
                 - (dict) misc information
         """
+        # print("action space: {}".format(self.action_space))
         ob_dict, reward, done, info = self.env.step(action)
+        imglist = []
+        if self.env.use_camera_obs:
+            for camera in self.cameras:
+                imglist.append(np.array(ob_dict[camera]))
+        self.imag_obs = imglist
+        # print("self.imag_obs: {}".format(self.imag_obs))
         return self._flatten_obs(ob_dict), reward, done, info
 
     def seed(self, seed=None):

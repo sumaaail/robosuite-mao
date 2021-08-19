@@ -1,0 +1,50 @@
+{
+    "actor_options": {
+    },
+    "alg": "SAC",
+    "env": "PegInsertionEnv",
+    "env_options": {
+        "frame_skip": 10,
+        "timestep": 0.01,
+        "time_limit": 4.0,
+        "logarithmic_cost": false,
+        "quadratic_cost": true,
+        "quadratic_rot_cost": true,
+        "hole_id": 25,
+        "random_target": true,
+        "random_hole_file": "random_reachable_holes_small_randomness.npy",
+        "use_rel_pos_err": true,
+        "gravity": false,
+        "observe_joints": false,
+        "in_peg_frame": true,
+        "contextual_policy": true,
+        "init_randomness": 0.01,
+        "sac_reward_scale": 100.0,
+        "controller": "ImpedanceControllerV2",
+//        "controller": "VariableImpedanceController",
+        "controller_options": {
+            "model_path": "full_peg_insertion_experiment_no_collision_no_gravity.xml",
+            "pos_scale": 0.3,
+            "rot_scale": 0.1,
+            "stiffness": [2.0, 2.0, 2.0, 6.0, 6.0, 6.0],
+            "stiffness_high": [4.0, 4.0, 4.0, 8.0, 8.0, 8.0],
+            "stiffness_low": [0.5, 0.5, 0.5, 4.0, 4.0, 4.0],
+            "stiffness_initial": [2.0, 2.0, 2.0, 6.0, 6.0, 6.0],
+            "context_dim": 4,
+            "latent_parameter_dim": 6,
+            "site_name": "peg_tip",
+            "in_ee_frame": true
+        }
+    },
+    "info_keywords": [
+        "tip_distance",
+        "success"
+    ],
+    "learning_options": {
+        "total_timesteps": 1000000
+    },
+    "entropy_alpha": 0.02,
+    "n_env": 1,
+//    "vectorized": false,
+    "policy_type": "MlpPolicy"
+}

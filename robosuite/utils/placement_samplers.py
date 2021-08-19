@@ -164,7 +164,9 @@ class UniformRandomSampler(ObjectPositionSampler):
         if self.ensure_object_boundary_in_range:
             minimum += object_horizontal_radius
             maximum -= object_horizontal_radius
-        return np.random.uniform(high=maximum, low=minimum)
+        x = np.random.uniform(high=maximum, low=minimum)
+        # print("x: {}".format(x))
+        return x
 
     def _sample_y(self, object_horizontal_radius):
         """
@@ -212,6 +214,9 @@ class UniformRandomSampler(ObjectPositionSampler):
             # Invalid axis specified, raise error
             raise ValueError("Invalid rotation axis specified. Must be 'x', 'y', or 'z'. Got: {}".format(self.rotation_axis))
 
+    def place(self, pos, quat):
+        pass
+
     def sample(self, fixtures=None, reference=None, on_top=True):
         """
         Uniformly sample relative to this sampler's reference_pos or @reference (if specified).
@@ -239,8 +244,10 @@ class UniformRandomSampler(ObjectPositionSampler):
         """
         # Standardize inputs
         placed_objects = {} if fixtures is None else copy(fixtures)
+        # print("placed_objects: {}".format(placed_objects))
         if reference is None:
             base_offset = self.reference_pos
+
         elif type(reference) is str:
             assert reference in placed_objects, "Invalid reference received. Current options are: {}, requested: {}"\
                 .format(placed_objects.keys(), reference)
@@ -252,9 +259,10 @@ class UniformRandomSampler(ObjectPositionSampler):
             base_offset = np.array(reference)
             assert base_offset.shape[0] == 3, "Invalid reference received. Should be (x,y,z) 3-tuple, but got: {}"\
                 .format(base_offset)
-
+        # print("base_offset: {}".format(base_offset))
         # Sample pos and quat for all objects assigned to this sampler
         for obj in self.mujoco_objects:
+            # print("obj: {}".format(obj))
             # First make sure the currently sampled object hasn't already been sampled
             assert obj.name not in placed_objects, "Object '{}' has already been sampled!".format(obj.name)
 

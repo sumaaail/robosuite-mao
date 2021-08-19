@@ -27,10 +27,10 @@ DEFAULT_WIPE_CONFIG = {
     "table_friction_std": 0,                        # Standard deviation to sample different friction parameters for the table each episode
     "table_height": 0.0,                            # Additional height of the table over the default location
     "table_height_std": 0.0,                        # Standard deviation to sample different heigths of the table each episode
-    "line_width": 0.04,                             # Width of the line to wipe (diameter of the pegs)
+    "line_width": 0.02,                             # Width of the line to wipe (diameter of the pegs)
     "two_clusters": False,                          # if the dirt to wipe is one continuous line or two
     "coverage_factor": 0.6,                         # how much of the table surface we cover
-    "num_markers": 100,                             # How many particles of dirt to generate in the environment
+    "num_markers": 200,                             # How many particles of dirt to generate in the environment
 
     # settings for thresholds
     "contact_threshold": 1.0,                       # Minimum eef force to qualify as contact [N]
@@ -76,7 +76,6 @@ class Wipe(SingleArmEnv):
                 joint positions. Setting this value to `None` or 0.0 results in no noise being applied.
                 If "gaussian" type of noise is applied then this magnitude scales the standard deviation applied,
                 If "uniform" type of noise is applied then this magnitude sets the bounds of the sampling range
-            :`'type'`: Type of noise to apply. Can either specify "gaussian" or "uniform"
 
             Should either be single dict if same noise value is to be used for all robots or else it should be a
             list of the same length as "robots" param
@@ -165,7 +164,7 @@ class Wipe(SingleArmEnv):
         reward_shaping=True,
         has_renderer=False,
         has_offscreen_renderer=True,
-        render_camera="frontview",
+        render_camera="sideview",
         render_collision_mesh=False,
         render_visual_mesh=True,
         render_gpu_device_id=-1,
@@ -173,7 +172,7 @@ class Wipe(SingleArmEnv):
         horizon=1000,
         ignore_done=False,
         hard_reset=True,
-        camera_names="agentview",
+        camera_names="sideview",
         camera_heights=256,
         camera_widths=256,
         camera_depths=False,

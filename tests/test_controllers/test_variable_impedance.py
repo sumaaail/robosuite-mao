@@ -24,13 +24,14 @@ render the trajectories to allow for visual analysis of gains
 """
 
 import numpy as np
-
+import cv2
 import robosuite as suite
 
 import os
 import json
 import argparse
-
+from mujoco_py import GlfwContext
+GlfwContext(offscreen=True)
 
 # Define the rate of change when sweeping through kp / damping values
 num_timesteps_per_change = 10
@@ -45,14 +46,15 @@ damping_default = 1     # critically damped
 
 # Define arguments for this test
 parser = argparse.ArgumentParser()
-parser.add_argument("--render", action="store_true", help="Whether to render tests or run headless")
+parser.add_argument("--render", default=False, help="Whether to render tests or run headless")
 args = parser.parse_args()
 
 
 # Running the actual test #
 def test_variable_impedance():
 
-    for controller_name in ["OSC_POSE", "OSC_POSITION", "JOINT_POSITION"]:
+    # for controller_name in ["OSC_POSE", "OSC_POSITION", "JOINT_POSITION"]:
+    for controller_name in ["OSC_POSE"]:
 
         # Define numpy seed so we guarantee consistent starting pos / ori for each trajectory
         np.random.seed(3)
@@ -63,6 +65,7 @@ def test_variable_impedance():
                                        'controllers/config/{}.json'.format(controller_name.lower()))
 
         # Load the controller
+        # with open("/home/sumail/robosuite/robosuite/controllers/config/osc_position.json") as f:
         with open(controller_path) as f:
             controller_config = json.load(f)
 
@@ -73,12 +76,13 @@ def test_variable_impedance():
 
         # Now, create a test env for testing the controller on
         env = suite.make(
-            "Lift",
+            "Wipe",
             robots="Sawyer",
             has_renderer=args.render,  # by default, don't use on-screen renderer for visual validation
-            has_offscreen_renderer=False,
-            use_camera_obs=False,
-            horizon=10000,
+            # has_renderer=True,
+            has_offscreen_renderer=True,
+            use_camera_obs=True,
+            horizon=1000,
             control_freq=20,
             controller_configs=controller_config
         )
@@ -146,12 +150,44 @@ def test_variable_impedance():
             sign = 1.0  # Whether to increase or decrease gain
 
             # Run trajectory until the threshold condition is met
+            new_image = np.ndarray((3, 256, 256), dtype=int)
             while i < total_steps:
                 # Create action (damping, kp, traj, gripper)
-                action = np.concatenate([damping, kp, sign*delta, [0]])
+                # Swayer & Door gripper
+                # action = np.concatenate([damping, kp, sign*delta, [0]])
+                # Swayer & Wipe gripper
+                action = np.concatenate([damping, kp, sign * delta])
 
                 # Take an environment step
-                env.step(action)
+
+                # env.step(action)
+
+
+                ob, _, _, _ = env.step(action)
+                # print(ob)
+                # print(ob['agentview_image'].shape)
+
+                print("step {}".format(i))
+
+
+                for m in range(256):
+                    for n in range(256):
+                        for p in range(3):
+                            new_image[p][m][n] = ob['sideview_image'][m][n][p]
+
+                new_image = new_image.astype(np.uint8)
+
+                # Separated the channels in my new image
+                new_image_red, new_image_green, new_image_blue = new_image
+
+                # Stacked the channels
+                new_rgb = np.dstack([new_image_red, new_image_green, new_image_blue])
+
+                # Displayed the image
+                cv2.imshow("WindowNameHere", new_rgb)
+                if cv2.waitKey(100) == 27:
+                    print("wait 100 ms")
+
                 if args.render:
                     env.render()
 

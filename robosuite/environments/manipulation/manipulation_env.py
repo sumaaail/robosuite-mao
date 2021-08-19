@@ -167,6 +167,8 @@ class ManipulationEnv(RobotEnv):
             camera_depths=camera_depths,
             robot_configs=robot_configs,
         )
+    def _default_hparams(self):
+        return HParams()
 
     @property
     def _visualizations(self):

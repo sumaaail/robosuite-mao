@@ -1,11 +1,9 @@
 from collections import OrderedDict
 import numpy as np
-
 from robosuite.utils.transform_utils import convert_quat
 from robosuite.utils.mjcf_utils import CustomMaterial
 
 from robosuite.environments.manipulation.single_arm_env import SingleArmEnv
-
 from robosuite.models.arenas import TableArena
 from robosuite.models.objects import BoxObject
 from robosuite.models.tasks import ManipulationTask
@@ -134,7 +132,7 @@ class Stack(SingleArmEnv):
         use_camera_obs=True,
         use_object_obs=True,
         reward_scale=1.0,
-        reward_shaping=False,
+        reward_shaping=True,
         placement_initializer=None,
         has_renderer=False,
         has_offscreen_renderer=True,
@@ -190,6 +188,27 @@ class Stack(SingleArmEnv):
             camera_depths=camera_depths,
         )
 
+    def reward2(self, action):
+        cubeA_pos = self.sim.data.body_xpos[self.cubeA_body_id]
+        cubeB_pos = self.sim.data.body_xpos[self.cubeB_body_id]
+        cubaC_pos = self.sim.data.body_xpos[self.cubeC_body_id]
+        gripper_site_pos = self.sim.data.site_xpos[self.robots[0].eef_site_id]
+        # lift reward
+        lift_reward = -(cubeB_pos[2] < self.table_offset[2] + 0.2).astype(float)
+
+        if lift_reward > 0:
+            print("lift reward: {}".format(lift_reward))
+
+        # constrint
+        penalty_a = np.linalg.norm(np.array(cubeA_pos) - np.array([0, -0.1, 0.918]))
+        penalty_c = np.linalg.norm(np.array(cubaC_pos) - np.array([0, 0.1, 0.918]))
+        penalty = -2 * np.tanh(penalty_a+penalty_c)
+
+        if penalty < -0.1:
+            print("penalty: {}".format(penalty))
+
+        return lift_reward + penalty
+
     def reward(self, action):
         """
         Reward function for the task.
@@ -223,14 +242,21 @@ class Stack(SingleArmEnv):
         Returns:
             float: reward value
         """
-        r_reach, r_lift, r_stack = self.staged_rewards()
+
+        r_reach, r_lift, r_stack, penalty = self.staged_rewards()
         if self.reward_shaping:
-            reward = max(r_reach, r_lift, r_stack)
+            reward = r_reach + r_lift + r_stack + penalty
+            print("r_reach: {}\tr_lift: {}\tr_stack: {}\tpenalty: {}\treward: {}".format(r_reach, r_lift, r_stack, penalty, reward))
+            # reward = max(r_reach, r_lift, r_stack)
+            # print("reward after reward_shaping: {]".format(reward))
         else:
             reward = 2.0 if r_stack > 0 else 0.0
-
+            # print("reward without reward_shaping: {}".format(reward))
         if self.reward_scale is not None:
             reward *= self.reward_scale / 2.0
+            # print("reward after scaling: {}".format(reward))
+
+
 
         return reward
 
@@ -248,42 +274,64 @@ class Stack(SingleArmEnv):
         # reaching is successful when the gripper site is close to the center of the cube
         cubeA_pos = self.sim.data.body_xpos[self.cubeA_body_id]
         cubeB_pos = self.sim.data.body_xpos[self.cubeB_body_id]
+        cubaC_pos = self.sim.data.body_xpos[self.cubeC_body_id]
+        # print("A pos: {}\nB pos: {}\nC pos: {}\n".format(cubeA_pos, cubeB_pos, cubaC_pos))
         gripper_site_pos = self.sim.data.site_xpos[self.robots[0].eef_site_id]
-        dist = np.linalg.norm(gripper_site_pos - cubeA_pos)
-        r_reach = (1 - np.tanh(10.0 * dist)) * 0.25
+        dist = np.linalg.norm(gripper_site_pos - cubeB_pos)
+        r_reach = (1 - np.tanh(10.0 * dist)) * 2
+
+        # print("\nreach reward: {}\n".format(r_reach))
 
         # grasping reward
-        grasping_cubeA = self._check_grasp(gripper=self.robots[0].gripper, object_geoms=self.cubeA)
-        if grasping_cubeA:
+        grasping_cubeB = self._check_grasp(gripper=self.robots[0].gripper, object_geoms=self.cubeB)
+        cubeB_lifted = False
+        # table height: 0.8, cube initial height: around 0.918
+        # print("cubeB_height: {}\ntable height: {}".format(cubaC_pos[2], self.table_offset[2]))
+        if grasping_cubeB:
             r_reach += 0.25
+            print("grasp cubeB successfully, r_reach = {}".format(r_reach))
+            # lifting is successful when the cube is above the table top by a margin
+            cubeB_height = cubeB_pos[2]
+            table_height = self.table_offset[2]
+            cubeB_lifted = cubeB_height > table_height + 0.118 + 0.05
+        r_lift = 1.0 if cubeB_lifted else 0.0
 
-        # lifting is successful when the cube is above the table top by a margin
-        cubeA_height = cubeA_pos[2]
-        table_height = self.table_offset[2]
-        cubeA_lifted = cubeA_height > table_height + 0.04
-        r_lift = 1.0 if cubeA_lifted else 0.0
+        # print("lift reward: {}\n".format(r_lift))
 
-        # Aligning is successful when cubeA is right above cubeB
-        if cubeA_lifted:
+        # Aligning is successful when cubeB is positioned in [-0.1, 0]
+        # initial horiz_dist: 0.0996
+        # print("\nhoriz_dist: {}\n".format(np.tanh(np.linalg.norm(
+        #         np.array(cubeB_pos[:2]) - np.array([-0.1, 0])
+        #     ))))
+        if cubeB_lifted:
             horiz_dist = np.linalg.norm(
-                np.array(cubeA_pos[:2]) - np.array(cubeB_pos[:2])
+                np.array(cubeB_pos[:2]) - np.array([-0.1, 0])
             )
             r_lift += 0.5 * (1 - np.tanh(horiz_dist))
-
+            print("lift cubeB to somewhere resulting r_lift = {}\n".format(r_lift))
         # stacking is successful when the block is lifted and the gripper is not holding the object
         r_stack = 0
-        cubeA_touching_cubeB = self.check_contact(self.cubeA, self.cubeB)
-        if not grasping_cubeA and r_lift > 0 and cubeA_touching_cubeB:
+        # cubeA_touching_cubeB = self.check_contact(self.cubeA, self.cubeB)
+        if not grasping_cubeB and r_lift > 1 and np.tanh(horiz_dist) < 0.01 and cubeB_height < table_height + 0.01 :
             r_stack = 2.0
+            print("stack successfully with r_stack: {}".format(r_stack))
 
-        return r_reach, r_lift, r_stack
+        # constrint
+        penalty_a = np.linalg.norm(np.array(cubeA_pos) - np.array([0, -0.1, 0.918]))
+        penalty_c = np.linalg.norm(np.array(cubaC_pos) - np.array([0, 0.1, 0.918]))
+        penalty = -8 * np.tanh(penalty_a + penalty_c)
+
+        if penalty < -0.5:
+            print("penalty: {}".format(penalty))
+
+        return r_reach, r_lift, r_stack, penalty
 
     def _load_model(self):
         """
         Loads an xml model, puts it in self.model
         """
         super()._load_model()
-
+        # print("I am stacking------------------------------------------------------------------------------------------")
         # Adjust base pose accordingly
         xpos = self.robots[0].robot_model.base_xpos_offset["table"](self.table_full_size[0])
         self.robots[0].robot_model.set_base_xpos(xpos)
@@ -321,37 +369,69 @@ class Stack(SingleArmEnv):
             tex_attrib=tex_attrib,
             mat_attrib=mat_attrib,
         )
+        bluewood = CustomMaterial(
+            texture="WoodBlue",
+            tex_name="bluewood",
+            mat_name="bluewood_mat",
+            tex_attrib=tex_attrib,
+            mat_attrib=mat_attrib,
+        )
         self.cubeA = BoxObject(
             name="cubeA",
-            size_min=[0.02, 0.02, 0.02], 
-            size_max=[0.02, 0.02, 0.02], 
+            size_min=[0.03, 0.015, 0.12],
+            size_max=[0.03, 0.015, 0.12],
             rgba=[1, 0, 0, 1],
             material=redwood,
         )
         self.cubeB = BoxObject(
             name="cubeB",
-            size_min=[0.025, 0.025, 0.025],
-            size_max=[0.025, 0.025, 0.025],
+            size_min=[0.03, 0.015, 0.12],
+            size_max=[0.03, 0.015, 0.12],
             rgba=[0, 1, 0, 1],
             material=greenwood,
         )
-        cubes = [self.cubeA, self.cubeB]
+        self.cubeC = BoxObject(
+            name="cubeC",
+            size_min=[0.03, 0.015, 0.12],
+            size_max=[0.03, 0.015, 0.12],
+            rgba=[0, 0, 1, 1],
+            material=bluewood,
+        )
+        cubes = [self.cubeA, self.cubeB, self.cubeC]
+
         # Create placement initializer
-        if self.placement_initializer is not None:
-            self.placement_initializer.reset()
-            self.placement_initializer.add_objects(cubes)
-        else:
-            self.placement_initializer = UniformRandomSampler(
-                name="ObjectSampler",
-                mujoco_objects=cubes,
-                x_range=[-0.08, 0.08],
-                y_range=[-0.08, 0.08],
-                rotation=None,
-                ensure_object_boundary_in_range=False,
-                ensure_valid_placement=True,
-                reference_pos=self.table_offset,
-                z_offset=0.01,
-            )
+        # if self.placement_initializer is not None:
+        #     print("placement_initializer is not none-----------------------------------------------------------------")
+        #     self.placement_initializer.reset()
+        #     self.placement_initializer.add_objects(cubes)
+        # else:
+        #     print("placement initializer is none=====================================================================")
+        #     self.placement_initializer = UniformRandomSampler(
+        #         name="ObjectSampler",
+        #         mujoco_objects=cubes,
+        #         x_range=[-0.08, 0.08],
+        #         y_range=[-0.08, 0.08],
+        #         # x_range=[0, 0],
+        #         # y_range=[0, 0],
+        #         rotation=None,
+        #         ensure_object_boundary_in_range=False,
+        #         ensure_valid_placement=True,
+        #         reference_pos=self.table_offset,
+        #         z_offset=0.01,
+        #     )
+        self.placement_initializer = UniformRandomSampler(
+            name="ObjectSampler",
+            mujoco_objects=cubes,
+            x_range=[-0.12, 0.12],
+            y_range=[-0.12, 0.12],
+            # x_range=[0, 0],
+            # y_range=[0, 0],
+            rotation=None,
+            ensure_object_boundary_in_range=False,
+            ensure_valid_placement=True,
+            reference_pos=self.table_offset,
+            z_offset=0.01,
+        )
 
         # task includes arena, robot, and objects of interest
         self.model = ManipulationTask(
@@ -371,6 +451,7 @@ class Stack(SingleArmEnv):
         # Additional object references from this env
         self.cubeA_body_id = self.sim.model.body_name2id(self.cubeA.root_body)
         self.cubeB_body_id = self.sim.model.body_name2id(self.cubeB.root_body)
+        self.cubeC_body_id = self.sim.model.body_name2id(self.cubeC.root_body)
 
     def _reset_internal(self):
         """
@@ -383,10 +464,17 @@ class Stack(SingleArmEnv):
 
             # Sample from the placement initializer for all objects
             object_placements = self.placement_initializer.sample()
+            # print(object_placements.values())
 
             # Loop through all objects and reset their positions
+            j = 0
+            i = -0.1
             for obj_pos, obj_quat, obj in object_placements.values():
-                self.sim.data.set_joint_qpos(obj.joints[0], np.concatenate([np.array(obj_pos), np.array(obj_quat)]))
+                j += 1
+                # print("round {}: obj_pos: {}\nobj_quat: {}\nobj: {}\n\n".format(j, obj_pos, obj_quat, obj))
+                self.sim.data.set_joint_qpos(obj.joints[0], np.concatenate([np.array([0., i, 0.93]), np.array([1,0,0,1])]))
+                i += 0.1
+
 
     def _setup_observables(self):
         """
@@ -421,6 +509,14 @@ class Stack(SingleArmEnv):
                 return convert_quat(np.array(self.sim.data.body_xquat[self.cubeB_body_id]), to="xyzw")
 
             @sensor(modality=modality)
+            def cubeC_pos(obs_cache):
+                return np.array(self.sim.data.body_xpos[self.cubeC_body_id])
+
+            @sensor(modality=modality)
+            def cubeC_quat(obs_cache):
+                return convert_quat(np.array(self.sim.data.body_xquat[self.cubeC_body_id]), to="xyzw")
+
+            @sensor(modality=modality)
             def gripper_to_cubeA(obs_cache):
                 return obs_cache["cubeA_pos"] - obs_cache[f"{pf}eef_pos"] if \
                     "cubeA_pos" in obs_cache and f"{pf}eef_pos" in obs_cache else np.zeros(3)
@@ -431,11 +527,27 @@ class Stack(SingleArmEnv):
                     "cubeB_pos" in obs_cache and f"{pf}eef_pos" in obs_cache else np.zeros(3)
 
             @sensor(modality=modality)
+            def gripper_to_cubeC(obs_cache):
+                return obs_cache["cubeC_pos"] - obs_cache[f"{pf}eef_pos"] if \
+                    "cubeC_pos" in obs_cache and f"{pf}eef_pos" in obs_cache else np.zeros(3)
+
+            @sensor(modality=modality)
             def cubeA_to_cubeB(obs_cache):
                 return obs_cache["cubeB_pos"] - obs_cache["cubeA_pos"] if \
                     "cubeA_pos" in obs_cache and "cubeB_pos" in obs_cache else np.zeros(3)
 
-            sensors = [cubeA_pos, cubeA_quat, cubeB_pos, cubeB_quat, gripper_to_cubeA, gripper_to_cubeB, cubeA_to_cubeB]
+            @sensor(modality=modality)
+            def cubeB_to_cubeC(obs_cache):
+                return obs_cache["cubeC_pos"] - obs_cache["cubeB_pos"] if \
+                    "cubeB_pos" in obs_cache and "cubeC_pos" in obs_cache else np.zeros(3)
+
+            @sensor(modality=modality)
+            def cubeA_to_cubeC(obs_cache):
+                return obs_cache["cubeC_pos"] - obs_cache["cubeA_pos"] if \
+                    "cubeA_pos" in obs_cache and "cubeC_pos" in obs_cache else np.zeros(3)
+
+            sensors = [cubeA_pos, cubeA_quat, cubeB_pos, cubeB_quat, cubeC_pos, cubeC_quat, gripper_to_cubeA,
+                       gripper_to_cubeB, gripper_to_cubeC, cubeA_to_cubeB, cubeA_to_cubeC, cubeB_to_cubeC]
             names = [s.__name__ for s in sensors]
 
             # Create observables
@@ -472,4 +584,4 @@ class Stack(SingleArmEnv):
 
         # Color the gripper visualization site according to its distance to the cube
         if vis_settings["grippers"]:
-            self._visualize_gripper_to_target(gripper=self.robots[0].gripper, target=self.cubeA)
+            self._visualize_gripper_to_target(gripper=self.robots[0].gripper, target=self.cubeB)
