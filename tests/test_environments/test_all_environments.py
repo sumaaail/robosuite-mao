@@ -14,13 +14,15 @@ import robosuite as suite
 
 
 def test_all_environments():
-
+    print("1234")
     envs = sorted(suite.ALL_ENVIRONMENTS)
+
     print(envs)
     for env_name in envs:
         # Create config dict
         env_config = {"env_name": env_name}
         for robot_name in ("Panda", "Sawyer", "Baxter"):
+        # for robot_name in ("Panda"):
             # create an environment for learning on pixels
             config = None
             if "TwoArm" in env_name:
