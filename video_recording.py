@@ -14,13 +14,13 @@ from stable_baselines3 import PPO, SAC, TD3
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument("--env", type=str, default="Stack")  # Door, Lift, NutAssembly, NutAssemblyRound,
+    parser.add_argument("--env", type=str, default="Door")  # Door, Lift, NutAssembly, NutAssemblyRound,
     # NutAssemblySingle, NutAssemblySquare, PickPlace, PickPlaceBread, PickPlaceCan, PickPlaceCereal, PickPlaceMilk,
     # PickPlaceSingle, Stack, TwoArmHandover, TwoArmLift, TwoArmPegInHole, Wipe
     parser.add_argument("--robots", nargs="+", type=str, default="Sawyer")  # Panda, Sawyer, Baxter
     parser.add_argument("--alg", type=str, default="SAC")
-    parser.add_argument("--controller_name", type=str, default="OSC_POSITION")  # see in robosuite/controllers/config
-    parser.add_argument("--impedance_mode", type=str, default="fixed")  # fixed, variable, variable_kp
+    parser.add_argument("--controller_name", type=str, default="OSC_POSE")  # see in robosuite/controllers/config
+    parser.add_argument("--impedance_mode", type=str, default="variable_kp")  # fixed, variable, variable_kp
     parser.add_argument("--camera", type=str, default="sideview")   # frontview, birdview, agentview, sideview,
     # robot0_robotview, robot0_eye_in_hand
     parser.add_argument("--video_path", type=str, default="video.mp4")
