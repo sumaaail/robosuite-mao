@@ -28,6 +28,7 @@ sys.path.insert(0, project_path + 'code')
 from stable_baselines3.common import monitor
 from stable_baselines3.common.results_plotter import load_results, ts2xy
 from mujoco_py import GlfwContext
+
 GlfwContext(offscreen=True)
 
 
@@ -41,22 +42,22 @@ class SaveOnBestTrainingRewardCallback(BaseCallback):
     It must contains the file created by the ``Monitor`` wrapper.
     :param verbose: (int)
     """
-    
+
     def __init__(self, check_freq: int, log_dir: str, verbose=1):
         super(SaveOnBestTrainingRewardCallback, self).__init__(verbose)
         self.check_freq = check_freq
         self.log_dir = log_dir
         self.save_path = os.path.join(log_dir, 'best_model')
         self.best_mean_reward = -np.inf
-    
+
     def _init_callback(self) -> None:
         # Create folder if needed
         if self.save_path is not None:
             os.makedirs(self.save_path, exist_ok=True)
-    
+
     def _on_step(self) -> bool:
         if self.n_calls % self.check_freq == 0:
-            
+
             # Retrieve training reward
             x, y = ts2xy(load_results(self.log_dir), 'timesteps')
             if len(x) > 0:
@@ -67,7 +68,7 @@ class SaveOnBestTrainingRewardCallback(BaseCallback):
                     print(
                         "Best mean reward: {:.2f} - Last mean reward per episode: {:.2f}".format(self.best_mean_reward,
                                                                                                  mean_reward))
-                
+
                 # New best model, you could save the agent here
                 if mean_reward > self.best_mean_reward:
                     self.best_mean_reward = mean_reward
@@ -97,13 +98,14 @@ def PPO_callback(_locals, _globals, log_dir):
         Callback called at each gradient update.
     """
     # Get the current update step.
-    # n_update = _locals['n_update']
-    #
-    # # Save on the first update and every 10 updates after that.
-    # if (n_update == 1) or (n_update % 10 == 0):
-    # 	checkpoint_save_path = os.path.join(
-    # 		log_dir, 'model_checkpoint_{}.pkl'.format(n_update))
-    # 	_locals['self'].save(checkpoint_save_path)
+    print(_locals.items())
+    n_update = _locals['n_update']
+
+    # Save on the first update and every 10 updates after that.
+    if (n_update == 1) or (n_update % 10 == 0):
+        checkpoint_save_path = os.path.join(
+            log_dir, 'model_checkpoint_{}.pkl'.format(n_update))
+        _locals['self'].save(checkpoint_save_path)
     pass
 
 
@@ -145,7 +147,7 @@ def make_env(env_cls,
         :param info_keywords: (tuple) optional, the keywords to record
         :param **env_options: additional arguments to pass to the environment
     """
-    
+
     def _init():
         env = env_cls(**env_options)
         env.seed(seed + rank)
@@ -154,7 +156,7 @@ def make_env(env_cls,
             monitor_path = os.path.join(save_path, "proc_{}".format(rank))
             env = monitor(env, monitor_path, info_keywords=tuple(info_keywords))
         return env
-    
+
     set_seed(seed)
     return _init
 
@@ -163,12 +165,12 @@ def replay_model(env, model, deterministic=True, num_episodes=None, record=False
     # Don't record data forever.
     assert (not record) or (num_episodes is not None), \
         "there must be a finite number of episodes to record the data"
-    
+
     # Initialize counts and data.
     num_episodes = num_episodes if num_episodes else np.inf
     episode_count = 0
     infos = []
-    
+
     # Simulate forward.
     obs = env.reset()
     while episode_count < num_episodes:
@@ -182,7 +184,7 @@ def replay_model(env, model, deterministic=True, num_episodes=None, record=False
         if done:
             obs = env.reset()
             episode_count += 1
-    
+
     return infos
 
 
@@ -196,29 +198,29 @@ def run_learn(args, params, save_path='', run_count=1):
     actor_options = params.get('actor_options', None)
     run_save_path = os.path.join(save_path, 'run_{}'.format(run_count))
     os.makedirs(run_save_path, exist_ok=True)
-    
+
     # # Save the parameters that will generate the model
     params_save_path = os.path.join(run_save_path, 'params.json')
     with open(params_save_path, 'w') as f:
         commentjson.dump(params, f, sort_keys=True, indent=4, ensure_ascii=False)
-    
+
     controller_name = "OSC_POSE"
     np.random.seed(3)
-    
+
     # Define controller path to load
     controller_path = os.path.join(os.path.dirname(__file__),
                                    'robosuite',
                                    'controllers/config/{}.json'.format(controller_name.lower()))
-     
+
     # Load the controller
     with open(controller_path) as f:
         controller_config = json.load(f)
-    
+
     # Manually edit impedance settings
     controller_config["impedance_mode"] = "variable"
     controller_config["kp_limits"] = [0, 300]
     controller_config["damping_limits"] = [0, 10]
-    
+
     # Now, create a test env for testing the controller on
     env = suite.make(
         "Wipe",
@@ -230,10 +232,10 @@ def run_learn(args, params, save_path='', run_count=1):
         control_freq=20,
         controller_configs=controller_config
     )
-    
+
     # Setup printing options for numbers
     np.set_printoptions(formatter={'float': lambda x: "{0:0.3f}".format(x)})
-    
+
     # if args.render:
     #     env.viewer.set_camera(camera_id=0)
 
@@ -241,7 +243,6 @@ def run_learn(args, params, save_path='', run_count=1):
 
     env = GymWrapper(env)
 
-    
     # Create the actor and learn
     if params['alg'] == 'PPO':
         model = PPO(
@@ -298,6 +299,7 @@ def set_seed(seed):
 
 if __name__ == '__main__':
     import warnings
+
     print("begin")
     # Setup command line arguments.
     parser = argparse.ArgumentParser(
@@ -341,14 +343,14 @@ if __name__ == '__main__':
         type=int,
         default=1,
         help='The number of trials to run.')
-    
+
     parser.add_argument("--render", default=True)
-    
+
     args = parser.parse_args()
     print("args setted")
     # Change the warning behavior for debugging.
     warnings.simplefilter(args.filter_warning, RuntimeWarning)
-    
+
     # Load the learning parameters from a file.
     param_dir = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'params')
     print("param_dir: ", param_dir)
@@ -367,7 +369,7 @@ if __name__ == '__main__':
         params['vectorized'] = False
 
     print("params :::", params)
-    
+
     # save_path = './results/5-Contextual-kuka/'
     # save_path_env_name = os.path.join('./results/mao_tmech_v1/', args.env_name)
     save_path_env_name = './results/mao_tmech_v1/Wipe/'
@@ -378,9 +380,10 @@ if __name__ == '__main__':
         os.makedirs(save_path)
 
     print("save_path :::", save_path)
-    
+
     if args.profile:
         import cProfile
+
         print("asd")
         for i in range(args.num_restarts):
             cProfile.run('run_learn(params, save_path, run_count=i)')
@@ -391,7 +394,7 @@ if __name__ == '__main__':
 
     # model = run_learn(params, save_path, run_count=i)
     # run_learn(args)
-    
+
 # while True:
 # 	env.render()
 
@@ -400,5 +403,3 @@ if __name__ == '__main__':
 # env_cls = globals()[params['env']]
 # env = env_cls(**params['env_options'])
 # replay_model(env, model)
-
-

@@ -1,8 +1,11 @@
 import argparse
 import json
 import os.path
+import random
+
 import numpy as np
 import commentjson
+import torch
 
 from stable_baselines3 import PPO, SAC, TD3
 from stable_baselines3.common.noise import NormalActionNoise
@@ -11,11 +14,12 @@ import robosuite as suite
 from run_robosuite_main import PPO_callback, SAC_callback, TD3_callback
 
 
-def run_learn(args, params, save_path='', run_count=1):
+def run_learn(args, params, save_path='', seed=0):
     total_timesteps = args.total_timesteps
 
     actor_options = params['alg_params'].get('actor_options', None)
-    run_save_path = os.path.join(save_path, 'run_{}'.format(run_count))
+
+    run_save_path = os.path.join(save_path, 'seed_{}'.format(seed))
     os.makedirs(run_save_path, exist_ok=True)
 
     # save parameters in params to params_save_path
@@ -24,30 +28,24 @@ def run_learn(args, params, save_path='', run_count=1):
         commentjson.dump(params, f, sort_keys=True, indent=4, ensure_ascii=False)
 
     controller_name = args.controller_name
+    # if exchange to set_seed(seed)?
     np.random.seed(5)
 
     # load controller from its path
-    controller_path = os.path.join(os.path.dirname(__file__),
-                                   'robosuite',
-                                   'controllers/config/{}.json'.format(controller_name.lower()))
-    with open(controller_path) as f:
-        controller_config = json.load(f)
 
-    controller_config["impedance_mode"] = args.impedance_mode
-    controller_config["kp_limits"] = [0, 300]
-    controller_config["damping_limits"] = [0, 10]
 
     # create env
     env = suite.make(
         args.env_name,
-        robots="Panda",
+        robots=args.robot,
         has_renderer=False,
         has_offscreen_renderer=True,
         use_camera_obs=True,
         horizon=10000,
         control_freq=20,
-        controller_configs=controller_config
+        controller_configs=params
     )
+
 
     # Setup printing options for numbers
     np.set_printoptions(formatter={'float': lambda x: "{0:0.3f}".format(x)})
@@ -55,6 +53,7 @@ def run_learn(args, params, save_path='', run_count=1):
     from robosuite.wrappers.gym_wrapper import GymWrapper
     env = GymWrapper(env)
 
+    # if need this reset?
     obs = env.reset()
     print("obs: {}".format(len(obs)))
 
@@ -99,6 +98,12 @@ def run_learn(args, params, save_path='', run_count=1):
     model_save_path = os.path.join(run_save_path, 'model')
     model.save(model_save_path)
 
+def set_seed(seed):
+    torch.manual_seed(seed)
+    torch.cuda.manual_seed(seed)
+    torch.backends.cudnn.deterministic = True
+    np.random.seed(seed)
+    random.seed(seed)
 
 if __name__ == '__main__':
     import warnings
@@ -131,7 +136,14 @@ if __name__ == '__main__':
         type=str
     )
     parser.add_argument(
-        '--seed'
+        '--seed',
+        default=0,
+        type=int
+    )
+    parser.add_argument(
+        '--robot',
+        default='Panda',
+        type=str
     )
 
     args = parser.parse_args()
@@ -146,13 +158,16 @@ if __name__ == '__main__':
     print("param_file: {}".format(param_file))
     with open(param_file) as f:
         params_loaded = commentjson.load(f)
-
+    params_loaded['impedance_mode'] = args.impedance_mode
+    params_loaded['kp_limits'] = [50, 250]
+    print("params :::", params_loaded)
     # save path
-    save_path_env_name = 'results/mao/'+args.env_name+'/'
+    save_path_env_name = 'results/2022/'+args.env_name+'/'
     save_path = os.path.join(save_path_env_name, args.alg)
+    save_path = os.path.join(save_path, args.robot)
     save_path = os.path.join(save_path, args.impedance_mode)
     if not os.path.exists(save_path):
         os.makedirs(save_path)
     print("created result_path: {}".format(save_path))
 
-    model = run_learn(args, params_loaded, save_path)
+    model = run_learn(args, params_loaded, save_path, args.seed)
