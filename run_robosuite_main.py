@@ -98,8 +98,8 @@ def PPO_callback(_locals, _globals, log_dir):
         Callback called at each gradient update.
     """
     # Get the current update step.
-    print(_locals.items())
-    n_update = _locals['n_update']
+    # print(_locals.items())
+    n_update = _locals['iteration']
 
     # Save on the first update and every 10 updates after that.
     if (n_update == 1) or (n_update % 10 == 0):

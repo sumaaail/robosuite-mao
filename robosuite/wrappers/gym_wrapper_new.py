@@ -9,7 +9,7 @@ from gym import spaces
 from gym.core import Env
 from .wrapper import Wrapper
 from tensorboardX import SummaryWriter as FileWriter
-from code.pytorch.PLAS.utils import ReplayBuffer
+# from code.pytorch.PLAS.utils import ReplayBuffer
 import time
 
 
@@ -78,7 +78,7 @@ class GymWrapper(Wrapper, Env):
         self._max_episode_steps = 500
         
         print('obs_dim :', self.obs_dim, self.action_space.shape[0])
-        self.replay_buffer = ReplayBuffer(int(self.obs_dim), int(self.action_space.shape[0]), max_size=max_size)
+        # self.replay_buffer = ReplayBuffer(int(self.obs_dim), int(self.action_space.shape[0]), max_size=max_size)
         self.state = None
         self.next_state = None
 
