@@ -50,12 +50,12 @@ def run_learn(args, params, save_path='', seed=0):
     # Setup printing options for numbers
     np.set_printoptions(formatter={'float': lambda x: "{0:0.3f}".format(x)})
 
-    from robosuite.wrappers.gym_wrapper import GymWrapper
+    from robosuite.wrappers.gym_wrapper_new import GymWrapper
     env = GymWrapper(env)
 
     # if need this reset?
-    obs = env.reset()
-    print("obs: {}".format(len(obs)))
+    # obs = env.reset()
+    # print("obs: {}".format(len(obs)))
 
     # Create the actor and learn
     if args.alg == 'PPO':
@@ -127,7 +127,7 @@ if __name__ == '__main__':
     )
     parser.add_argument(
         '--total_timesteps',
-        default=10,
+        default=1000000,
         type=int
     )
     parser.add_argument(
@@ -159,7 +159,7 @@ if __name__ == '__main__':
     with open(param_file) as f:
         params_loaded = commentjson.load(f)
     params_loaded['impedance_mode'] = args.impedance_mode
-    params_loaded['kp_limits'] = [50, 250]
+    params_loaded['kp_limits'] = [0, 300]
     print("params :::", params_loaded)
     # save path
     save_path_env_name = 'results/2022/'+args.env_name+'/'

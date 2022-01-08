@@ -25,7 +25,7 @@ if __name__ == '__main__':
     parser.add_argument("--camera", type=str, default="frontview")  # frontview, birdview, agentview, sideview,
     # robot0_robotview, robot0_eye_in_hand
     parser.add_argument("--video_path", type=str, default="video.mp4")
-    parser.add_argument("--record_timesteps", type=str, default=500)
+    parser.add_argument("--record_timesteps", type=str, default=300)
     parser.add_argument("--skip_frame", type=int, default=1)
     parser.add_argument("--seed", type=int, default=0)
     args = parser.parse_args()
@@ -67,7 +67,7 @@ if __name__ == '__main__':
     result_path = os.path.join(os.path.dirname(__file__),
                                'results/2022/{}/{}/{}/{}/seed_{}'.format(args.env, args.alg, args.robots,
                                                                                      args.impedance_mode, args.seed))
-    model_path = os.path.join(result_path, 'model.zip')
+    model_path = os.path.join(result_path, 'model_1e4.zip')
     if args.alg == "SAC":
         model = SAC.load(model_path)
     elif args.alg == "PPO":

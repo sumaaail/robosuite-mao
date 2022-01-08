@@ -50,6 +50,7 @@ class GymWrapper(Wrapper, Env):
             for idx in range(len(self.env.robots)):
                 keys += ["robot{}_proprio-state".format(idx)]
         self.keys = keys
+        print('keys: ', self.keys)
         self.cameras = cameras
         # Gym specific attributes
         self.env.spec = None
@@ -65,6 +66,8 @@ class GymWrapper(Wrapper, Env):
         self.observation_space = spaces.Box(low=low, high=high)
         low, high = self.env.action_spec
         self.action_space = spaces.Box(low=low, high=high, dtype=np.float32)
+        self.total_steps = 0
+        print('obs_dim :', self.obs_dim, self.action_space.shape[0])
 
     def _flatten_obs(self, obs_dict, verbose=False):
         """
@@ -129,6 +132,8 @@ class GymWrapper(Wrapper, Env):
             for camera in self.cameras:
                 imglist.append(np.array(ob_dict[camera]))
         self.imag_obs = imglist
+        self.total_steps += 1
+        print('self.total_steps: {}, reward: {}'.format(self.total_steps, reward))
         # print("self.imag_obs: {}".format(self.imag_obs))
         return self._flatten_obs(ob_dict), reward, done, info
 

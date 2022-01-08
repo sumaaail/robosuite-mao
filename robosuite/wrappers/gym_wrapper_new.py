@@ -9,7 +9,7 @@ from gym import spaces
 from gym.core import Env
 from .wrapper import Wrapper
 from tensorboardX import SummaryWriter as FileWriter
-# from code.pytorch.PLAS.utils import ReplayBuffer
+from code.PLAS.utils import ReplayBuffer
 import time
 
 
@@ -28,7 +28,7 @@ class GymWrapper(Wrapper, Env):
         AssertionError: [Object observations must be enabled if no keys]
     """
 
-    def __init__(self, env, logdir, max_size, keys=None):
+    def __init__(self, env, logdir=0, max_size=256, keys=None):
         
         # Run super method
         super().__init__(env=env)
@@ -48,13 +48,17 @@ class GymWrapper(Wrapper, Env):
             if self.env.use_object_obs:
                 keys += ["object-state"]
             # Add image obs if requested
+            cameras = []
             if self.env.use_camera_obs:
-                keys += [f"{cam_name}_image" for cam_name in self.env.camera_names]
+                cameras = [f"{cam_name}_image" for cam_name in self.env.camera_names]
+                keys += cameras
+                print("cameras: {}".format(cameras))
             # Iterate over all robots to add to state
             for idx in range(len(self.env.robots)):
                 keys += ["robot{}_proprio-state".format(idx)]
         self.keys = keys
-        
+        print('keys: ',self.keys)
+        self.cameras = cameras
         # Gym specific attributes
         self.env.spec = None
         self.metadata = None
@@ -78,9 +82,11 @@ class GymWrapper(Wrapper, Env):
         self._max_episode_steps = 500
         
         print('obs_dim :', self.obs_dim, self.action_space.shape[0])
-        # self.replay_buffer = ReplayBuffer(int(self.obs_dim), int(self.action_space.shape[0]), max_size=max_size)
+        # print('obs: {}'.format(obs))
+        self.replay_buffer = ReplayBuffer(int(self.obs_dim), int(self.action_space.shape[0]), max_size=max_size)
         self.state = None
         self.next_state = None
+
 
     def _flatten_obs(self, obs_dict, verbose=False):
         """
@@ -95,7 +101,7 @@ class GymWrapper(Wrapper, Env):
         """
         ob_lst = []
         for key in self.keys:
-            if key in obs_dict:
+            if key in obs_dict and key not in self.cameras:
                 if verbose:
                     print("adding key: {}".format(key))
                 ob_lst.append(np.array(obs_dict[key]).flatten())
@@ -128,6 +134,7 @@ class GymWrapper(Wrapper, Env):
                 - (dict) misc information
         """
         ob_dict, reward, done, info = self.env.step(action)
+
         # time.sleep(.002)
         
         self.episode_reward += reward
