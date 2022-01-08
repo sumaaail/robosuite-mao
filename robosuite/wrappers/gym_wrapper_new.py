@@ -27,9 +27,7 @@ class GymWrapper(Wrapper, Env):
     Raises:
         AssertionError: [Object observations must be enabled if no keys]
     """
-
     def __init__(self, env, logdir=0, max_size=256, keys=None):
-        
         # Run super method
         super().__init__(env=env)
         
@@ -86,7 +84,6 @@ class GymWrapper(Wrapper, Env):
         self.replay_buffer = ReplayBuffer(int(self.obs_dim), int(self.action_space.shape[0]), max_size=max_size)
         self.state = None
         self.next_state = None
-
 
     def _flatten_obs(self, obs_dict, verbose=False):
         """

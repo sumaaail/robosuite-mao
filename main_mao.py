@@ -2,7 +2,6 @@ import argparse
 import json
 import os.path
 import random
-
 import numpy as np
 import commentjson
 import torch
@@ -19,7 +18,7 @@ def run_learn(args, params, save_path='', seed=0):
 
     actor_options = params['alg_params'].get('actor_options', None)
 
-    run_save_path = os.path.join(save_path, 'seed_{}'.format(seed))
+    run_save_path = os.path.join(save_path, args.alg + '_seed_{}'.format(seed))
     os.makedirs(run_save_path, exist_ok=True)
 
     # save parameters in params to params_save_path
@@ -28,11 +27,11 @@ def run_learn(args, params, save_path='', seed=0):
         commentjson.dump(params, f, sort_keys=True, indent=4, ensure_ascii=False)
 
     controller_name = args.controller_name
+
     # if exchange to set_seed(seed)?
     np.random.seed(5)
 
     # load controller from its path
-
 
     # create env
     env = suite.make(
@@ -46,12 +45,11 @@ def run_learn(args, params, save_path='', seed=0):
         controller_configs=params
     )
 
-
     # Setup printing options for numbers
     np.set_printoptions(formatter={'float': lambda x: "{0:0.3f}".format(x)})
 
     from robosuite.wrappers.gym_wrapper_new import GymWrapper
-    env = GymWrapper(env)
+    env = GymWrapper(env, logdir=run_save_path)
 
     # if need this reset?
     # obs = env.reset()
@@ -82,6 +80,7 @@ def run_learn(args, params, save_path='', seed=0):
             **actor_options)
     else:
         raise NotImplementedError
+
     # Create the callback
     if isinstance(model, PPO):
         learn_callback = lambda l, g: PPO_callback(l, g, run_save_path)
@@ -98,12 +97,14 @@ def run_learn(args, params, save_path='', seed=0):
     model_save_path = os.path.join(run_save_path, 'model')
     model.save(model_save_path)
 
+
 def set_seed(seed):
     torch.manual_seed(seed)
     torch.cuda.manual_seed(seed)
     torch.backends.cudnn.deterministic = True
     np.random.seed(seed)
     random.seed(seed)
+
 
 if __name__ == '__main__':
     import warnings
@@ -161,11 +162,13 @@ if __name__ == '__main__':
     params_loaded['impedance_mode'] = args.impedance_mode
     params_loaded['kp_limits'] = [0, 300]
     print("params :::", params_loaded)
+
     # save path
     save_path_env_name = 'results/2022/'+args.env_name+'/'
     save_path = os.path.join(save_path_env_name, args.alg)
     save_path = os.path.join(save_path, args.robot)
     save_path = os.path.join(save_path, args.impedance_mode)
+
     if not os.path.exists(save_path):
         os.makedirs(save_path)
     print("created result_path: {}".format(save_path))
