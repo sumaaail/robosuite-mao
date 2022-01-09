@@ -18,7 +18,7 @@ def run_learn(args, params, save_path='', seed=0):
 
     actor_options = params['alg_params'].get('actor_options', None)
 
-    run_save_path = os.path.join(save_path, args.alg + '_seed_{}'.format(seed))
+    run_save_path = os.path.join(save_path, args.alg + '_seed_{}_steps_{}'.format(seed, total_timesteps))
     os.makedirs(run_save_path, exist_ok=True)
 
     # save parameters in params to params_save_path
@@ -113,7 +113,7 @@ if __name__ == '__main__':
     )
     parser.add_argument(
         '--env_name',
-        default='Door',
+        default='Wipe',
         type=str
     )
     parser.add_argument(
@@ -146,6 +146,11 @@ if __name__ == '__main__':
         default='Panda',
         type=str
     )
+    parser.add_argument(
+        '--kp_limits',
+        default=[0, 300],
+        type=list
+    )
 
     args = parser.parse_args()
     warnings.simplefilter('default', RuntimeWarning)
@@ -160,7 +165,7 @@ if __name__ == '__main__':
     with open(param_file) as f:
         params_loaded = commentjson.load(f)
     params_loaded['impedance_mode'] = args.impedance_mode
-    params_loaded['kp_limits'] = [0, 300]
+    params_loaded['kp_limits'] = args.kp_limits
     print("params :::", params_loaded)
 
     # save path
