@@ -147,9 +147,14 @@ if __name__ == '__main__':
         type=str
     )
     parser.add_argument(
-        '--kp_limits',
-        default=[0, 300],
-        type=list
+        '--kp_max',
+        default=300,
+        type=int
+    )
+    parser.add_argument(
+        '--kp_min',
+        default=0,
+        type=int
     )
 
     args = parser.parse_args()
@@ -165,7 +170,7 @@ if __name__ == '__main__':
     with open(param_file) as f:
         params_loaded = commentjson.load(f)
     params_loaded['impedance_mode'] = args.impedance_mode
-    params_loaded['kp_limits'] = args.kp_limits
+    params_loaded['kp_limits'] = [args.kp_min, args.kp_max]
     print("params :::", params_loaded)
 
     # save path
