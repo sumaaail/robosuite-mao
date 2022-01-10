@@ -18,7 +18,10 @@ def run_learn(args, params, save_path='', seed=0):
 
     actor_options = params['alg_params'].get('actor_options', None)
 
-    run_save_path = os.path.join(save_path, args.alg + '_seed_{}_steps_{}'.format(seed, total_timesteps))
+    if args.impedance_mode == 'variable':
+        run_save_path = os.path.join(save_path, args.alg + '_kp-limits[{},{}]'.format(args.kp_min, args.kp_max))
+    elif args.impedance_mode == 'fixed':
+        run_save_path = os.path.join(save_path, args.alg + '_kp{}_damping-ratio{}'.format(args.kp, args.damping_ratio))
     os.makedirs(run_save_path, exist_ok=True)
 
     # save parameters in params to params_save_path
@@ -156,6 +159,16 @@ if __name__ == '__main__':
         default=0,
         type=int
     )
+    parser.add_argument(
+        '--kp',
+        default=150,
+        type=int
+    )
+    parser.add_argument(
+        '--damping_ratio',
+        default=1,
+        type=int
+    )
 
     args = parser.parse_args()
     warnings.simplefilter('default', RuntimeWarning)
@@ -170,14 +183,19 @@ if __name__ == '__main__':
     with open(param_file) as f:
         params_loaded = commentjson.load(f)
     params_loaded['impedance_mode'] = args.impedance_mode
-    params_loaded['kp_limits'] = [args.kp_min, args.kp_max]
+    if args.impedance_mode == 'variable':
+        params_loaded['kp_limits'] = [args.kp_min, args.kp_max]
+    elif args.impedance_mode == 'fixed':
+        params_loaded['kp'] = args.kp
+        params_loaded['damping_ratio'] = args.damping_ratio
     print("params :::", params_loaded)
 
     # save path
-    save_path_env_name = 'results/2022/'+args.env_name+'/'
+    save_path_env_name = 'results/v2/'+args.env_name+'/'
     save_path = os.path.join(save_path_env_name, args.alg)
     save_path = os.path.join(save_path, args.robot)
     save_path = os.path.join(save_path, args.impedance_mode)
+    save_path = os.path.join(save_path, 'seed'+str(args.seed))
 
     if not os.path.exists(save_path):
         os.makedirs(save_path)

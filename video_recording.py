@@ -15,7 +15,7 @@ from stable_baselines3 import PPO, SAC, TD3
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument("--env", type=str, default="Door")  # Door, Lift, NutAssembly, NutAssemblyRound,
+    parser.add_argument("--env", type=str, default="Wipe")  # Door, Lift, NutAssembly, NutAssemblyRound,
     # NutAssemblySingle, NutAssemblySquare, PickPlace, PickPlaceBread, PickPlaceCan, PickPlaceCereal, PickPlaceMilk,
     # PickPlaceSingle, Stack, TwoArmHandover, TwoArmLift, TwoArmPegInHole, Wipe
     parser.add_argument("--robots", nargs="+", type=str, default="Panda")  # Panda, Sawyer, Baxter
@@ -36,7 +36,7 @@ if __name__ == '__main__':
 
     # load controller from its path0000000000000000000000h
     controller_path = os.path.join(os.path.dirname(__file__),
-                                   'results/2022/{}/{}/{}/{}/seed_{}/params.json'.format(args.env, args.alg,
+                                   'results/2022/{}/{}/{}/{}/PPO_seed_{}_steps_500000/params.json'.format(args.env, args.alg,
                                                                                          args.robots,
                                                                                          args.impedance_mode,
                                                                                          args.seed))
@@ -65,9 +65,9 @@ if __name__ == '__main__':
     env = GymWrapper(env)
     print("after wrapper==============================================================================================")
     result_path = os.path.join(os.path.dirname(__file__),
-                               'results/2022/{}/{}/{}/{}/seed_{}'.format(args.env, args.alg, args.robots,
+                               'results/2022/{}/{}/{}/{}/PPO_seed_{}_steps_500000'.format(args.env, args.alg, args.robots,
                                                                                      args.impedance_mode, args.seed))
-    model_path = os.path.join(result_path, 'model_1e4.zip')
+    model_path = os.path.join(result_path, 'model.zip')
     if args.alg == "SAC":
         model = SAC.load(model_path)
     elif args.alg == "PPO":

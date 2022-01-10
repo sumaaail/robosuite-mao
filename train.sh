@@ -1,1 +1,1 @@
-python main_mao.py --env_name=Wipe --impedance_mode=variable --total_timesteps=1000000 --kp_max=300 --kp_min=0
+python main_mao.py --env_name=Wipe --impedance_mode=fixed --total_timesteps=1000000 --kp=200 damping_ratio=1
