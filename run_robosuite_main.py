@@ -27,9 +27,9 @@ sys.path.insert(0, project_path + 'code')
 
 from stable_baselines3.common import monitor
 from stable_baselines3.common.results_plotter import load_results, ts2xy
-from mujoco_py import GlfwContext
-
-GlfwContext(offscreen=True)
+# from mujoco_py import GlfwContext
+#
+# GlfwContext(offscreen=True)
 
 
 class SaveOnBestTrainingRewardCallback(BaseCallback):

@@ -11,9 +11,9 @@ from stable_baselines3.common.noise import NormalActionNoise
 
 import robosuite as suite
 from run_robosuite_main import PPO_callback, SAC_callback, TD3_callback
-from mujoco_py import GlfwContext
-
-GlfwContext(offscreen=True)
+# from mujoco_py import GlfwContext
+#
+# GlfwContext(offscreen=True)
 
 def run_learn(args, params, save_path=''):
     total_timesteps = args.total_timesteps
