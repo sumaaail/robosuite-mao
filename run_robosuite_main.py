@@ -294,7 +294,7 @@ def set_seed(seed):
     torch.cuda.manual_seed(seed)  # gpu 为当前GPU设置随机种子
     torch.backends.cudnn.deterministic = True  # cudnn
     np.random.seed(seed)  # numpy
-    random.seed(seed)  # random and transforms
+    # random.seed(seed)  # random and transforms
 
 
 if __name__ == '__main__':

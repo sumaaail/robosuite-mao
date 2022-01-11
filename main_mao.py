@@ -11,9 +11,11 @@ from stable_baselines3.common.noise import NormalActionNoise
 
 import robosuite as suite
 from run_robosuite_main import PPO_callback, SAC_callback, TD3_callback
+from mujoco_py import GlfwContext
 
+GlfwContext(offscreen=True)
 
-def run_learn(args, params, save_path='', seed=0):
+def run_learn(args, params, save_path=''):
     total_timesteps = args.total_timesteps
 
     actor_options = params['alg_params'].get('actor_options', None)
@@ -21,7 +23,8 @@ def run_learn(args, params, save_path='', seed=0):
     if args.impedance_mode == 'variable':
         run_save_path = os.path.join(save_path, args.alg + '_kp-limits[{},{}]'.format(args.kp_min, args.kp_max))
     elif args.impedance_mode == 'fixed':
-        run_save_path = os.path.join(save_path, args.alg + '_kp{}_damping-ratio{}'.format(args.kp, args.damping_ratio))
+        run_save_path = os.path.join(save_path, args.alg + '_kp{}'.format(args.kp, args.damping_ratio))
+    run_save_path = os.path.join(save_path, 'seed_'+str(args.seed))
     os.makedirs(run_save_path, exist_ok=True)
 
     # save parameters in params to params_save_path
@@ -29,22 +32,21 @@ def run_learn(args, params, save_path='', seed=0):
     with open(params_save_path, 'w') as f:
         commentjson.dump(params, f, sort_keys=True, indent=4, ensure_ascii=False)
 
-    controller_name = args.controller_name
-
-    # if exchange to set_seed(seed)?
-    np.random.seed(5)
-
-    # load controller from its path
-
+    set_seed(args.seed)
     # create env
     env = suite.make(
         args.env_name,
         robots=args.robot,
+
         has_renderer=False,
-        has_offscreen_renderer=True,
-        use_camera_obs=True,
-        horizon=10000,
-        control_freq=20,
+        render_camera="frontview",
+        has_offscreen_renderer=False,
+
+        use_camera_obs=False,
+        use_object_obs=True,
+        horizon=1000,
+        control_freq=50,
+        reward_shaping=True,
         controller_configs=params
     )
 
@@ -63,23 +65,23 @@ def run_learn(args, params, save_path='', seed=0):
         model = PPO(
             params['alg_params']['policy_type'],
             env,
-            tensorboard_log=save_path,
+            # tensorboard_log=save_path,
             **actor_options)
     elif args.alg == 'SAC':
         model = SAC(
-            params['policy_type'],
+            params['alg_params']['policy_type'],
             env,
-            tensorboard_log=save_path,
+            # tensorboard_log=save_path,
             **actor_options)
     elif args.alg == 'TD3':
         n_actions = env.action_space.shape[-1]
         action_noise = NormalActionNoise(mean=np.zeros(n_actions), sigma=0.1 * np.ones(n_actions))
         model = TD3(
-            params['policy_type'],
+            params['alg_params']['policy_type'],
             env,
             action_noise=action_noise,
             # verbose=1,
-            tensorboard_log=save_path,
+            # tensorboard_log=save_path,
             **actor_options)
     else:
         raise NotImplementedError
@@ -183,6 +185,7 @@ if __name__ == '__main__':
     with open(param_file) as f:
         params_loaded = commentjson.load(f)
     params_loaded['impedance_mode'] = args.impedance_mode
+    params_loaded['seed'] = args.seed
     if args.impedance_mode == 'variable':
         params_loaded['kp_limits'] = [args.kp_min, args.kp_max]
     elif args.impedance_mode == 'fixed':
@@ -191,14 +194,14 @@ if __name__ == '__main__':
     print("params :::", params_loaded)
 
     # save path
-    save_path_env_name = 'results/v2/'+args.env_name+'/'
-    save_path = os.path.join(save_path_env_name, args.alg)
-    save_path = os.path.join(save_path, args.robot)
+    save_path_env_name = 'new_results/v1/'+args.env_name+'/'
+    # save_path = os.path.join(save_path_env_name, args.alg)
+    save_path = os.path.join(save_path_env_name, args.robot)
     save_path = os.path.join(save_path, args.impedance_mode)
-    save_path = os.path.join(save_path, 'seed'+str(args.seed))
+    # save_path = os.path.join(save_path, 'seed'+str(args.seed))
 
     if not os.path.exists(save_path):
         os.makedirs(save_path)
     print("created result_path: {}".format(save_path))
 
-    model = run_learn(args, params_loaded, save_path, args.seed)
+    model = run_learn(args, params_loaded, save_path)

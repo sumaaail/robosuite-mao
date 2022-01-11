@@ -115,3 +115,6 @@ mjkey.txt
 .recorded_video/
 .alter/
 .results/
+nohup.out
+.runs/
+.log/

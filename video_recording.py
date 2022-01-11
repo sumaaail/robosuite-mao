@@ -11,9 +11,11 @@ macros.IMAGE_CONVENTION = "opencv"
 import numpy as np
 import os
 from robosuite import make
+from run_robosuite_main import set_seed
 from stable_baselines3 import PPO, SAC, TD3
 
 if __name__ == '__main__':
+    path = 'results/2022/Wipe/PPO/Panda/fixed/PPO_seed_0_steps_500000/'
     parser = argparse.ArgumentParser()
     parser.add_argument("--env", type=str, default="Wipe")  # Door, Lift, NutAssembly, NutAssemblyRound,
     # NutAssemblySingle, NutAssemblySquare, PickPlace, PickPlaceBread, PickPlaceCan, PickPlaceCereal, PickPlaceMilk,
@@ -25,25 +27,17 @@ if __name__ == '__main__':
     parser.add_argument("--camera", type=str, default="frontview")  # frontview, birdview, agentview, sideview,
     # robot0_robotview, robot0_eye_in_hand
     parser.add_argument("--video_path", type=str, default="video.mp4")
-    parser.add_argument("--record_timesteps", type=str, default=300)
+    parser.add_argument("--record_timesteps", type=str, default=500)
     parser.add_argument("--skip_frame", type=int, default=1)
-    parser.add_argument("--seed", type=int, default=0)
+    parser.add_argument("--seed", type=int, default=5)
     args = parser.parse_args()
 
-    # load controller
-    controller_name = args.controller_name
-    np.random.seed(args.seed)
-
     # load controller from its path0000000000000000000000h
-    controller_path = os.path.join(os.path.dirname(__file__),
-                                   'results/2022/{}/{}/{}/{}/PPO_seed_{}_steps_500000/params.json'.format(args.env, args.alg,
-                                                                                         args.robots,
-                                                                                         args.impedance_mode,
-                                                                                         args.seed))
+    controller_path = os.path.join(os.path.dirname(__file__), path+'params.json')
     with open(controller_path) as f:
         controller_config = json.load(f)
 
-    print("before make env--------------------------------------------------------------------------------------------")
+    set_seed(controller_config['seed'])
     env = suite.make(
         args.env,
         robots=args.robots,
@@ -54,7 +48,7 @@ if __name__ == '__main__':
         camera_names=args.camera,
         # camera_heights=args.height,
         # camera_widths=args.width,
-        horizon=10000,
+        horizon=1000,
         control_freq=20,
         controller_configs=controller_config
     )
@@ -64,10 +58,8 @@ if __name__ == '__main__':
     print("before wrapper-------------------------------------------------------------------------------------------")
     env = GymWrapper(env)
     print("after wrapper==============================================================================================")
-    result_path = os.path.join(os.path.dirname(__file__),
-                               'results/2022/{}/{}/{}/{}/PPO_seed_{}_steps_500000'.format(args.env, args.alg, args.robots,
-                                                                                     args.impedance_mode, args.seed))
-    model_path = os.path.join(result_path, 'model.zip')
+
+    model_path = os.path.join(os.path.dirname(__file__), path+'model_checkpoint_0.pkl')
     if args.alg == "SAC":
         model = SAC.load(model_path)
     elif args.alg == "PPO":
@@ -82,7 +74,12 @@ if __name__ == '__main__':
     print("obs: {}".format(len(obs)))
 
     # video path
-    video_path = "{}_{}_{}_{}_video.mp4".format(args.env, args.alg, args.impedance_mode, args.camera)
+    video_path = os.path.join(os.path.dirname(__file__), 'recorded_video')
+    if controller_config['impedance_mode'] == 'fixed':
+        video_path = os.path.join(video_path, '{}_{}_{}_{}_{}_{}_video.mp4'.format(args.env, args.alg, controller_config['impedance_mode'], controller_config['kp'], controller_config['seed'], args.camera))
+    elif controller_config['impedance_mode'] == 'variable':
+        video_path = os.path.join(video_path, '{}_{}_{}_{}_{}_{}_video.mp4'.format(args.env, args.alg, controller_config['impedance_mode'], controller_config['kp_limits'], controller_config['seed'], args.camera))
+
     writer = imageio.get_writer(video_path, fps=20)
 
     frames = []

@@ -98,7 +98,8 @@ class GymWrapper(Wrapper, Env):
         """
         ob_lst = []
         for key in self.keys:
-            if key in obs_dict and key not in self.cameras:
+            # if key in obs_dict and key not in self.cameras:
+            if key in obs_dict:
                 if verbose:
                     print("adding key: {}".format(key))
                 ob_lst.append(np.array(obs_dict[key]).flatten())
