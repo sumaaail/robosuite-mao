@@ -112,3 +112,5 @@ mjkey.txt
 .idea
 
 .pytest_cache/
+.recorded_video/
+.alter/
