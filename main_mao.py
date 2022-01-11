@@ -20,11 +20,12 @@ def run_learn(args, params, save_path=''):
 
     actor_options = params['alg_params'].get('actor_options', None)
 
-    if args.impedance_mode == 'variable':
-        run_save_path = os.path.join(save_path, args.alg + '_kp-limits[{},{}]'.format(args.kp_min, args.kp_max))
-    elif args.impedance_mode == 'fixed':
-        run_save_path = os.path.join(save_path, args.alg + '_kp{}'.format(args.kp, args.damping_ratio))
-    run_save_path = os.path.join(save_path, 'seed_'+str(args.seed))
+    # if args.impedance_mode == 'variable':
+    #     run_save_path = os.path.join(save_path, args.alg + '_kp-limits[{},{}]'.format(args.kp_min, args.kp_max))
+    # elif args.impedance_mode == 'fixed':
+    #     run_save_path = os.path.join(save_path, args.alg + '_kp{}'.format(args.kp, args.damping_ratio))
+    run_save_path = os.path.join(save_path, args.alg)
+    run_save_path = os.path.join(run_save_path, 'seed_'+str(args.seed))
     os.makedirs(run_save_path, exist_ok=True)
 
     # save parameters in params to params_save_path
@@ -198,6 +199,10 @@ if __name__ == '__main__':
     # save_path = os.path.join(save_path_env_name, args.alg)
     save_path = os.path.join(save_path_env_name, args.robot)
     save_path = os.path.join(save_path, args.impedance_mode)
+    if args.impedance_mode == 'fixed':
+        save_path = os.path.join(save_path, 'kp_{}'.format(args.kp))
+    elif args.impedance_mode == 'variable':
+        save_path = os.path.join(save_path, 'kp_limits_[{} {}]'.format(args.kp_min, args.kp_max))
     # save_path = os.path.join(save_path, 'seed'+str(args.seed))
 
     if not os.path.exists(save_path):
