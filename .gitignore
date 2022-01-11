@@ -111,10 +111,10 @@ mjkey.txt
 *.jpg
 .idea
 
-.pytest_cache/
-.recorded_video/
-.alter/
-.results/
+pytest_cache/
+recorded_video/
+alter/
+results/
 nohup.out
-.runs/
-.log/
+runs/
+log/
