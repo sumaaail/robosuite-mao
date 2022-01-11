@@ -114,3 +114,4 @@ mjkey.txt
 .pytest_cache/
 .recorded_video/
 .alter/
+.results/
