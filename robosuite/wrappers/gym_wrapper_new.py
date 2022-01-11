@@ -84,6 +84,7 @@ class GymWrapper(Wrapper, Env):
         self.replay_buffer = ReplayBuffer(int(self.obs_dim), int(self.action_space.shape[0]), max_size=max_size)
         self.state = None
         self.next_state = None
+        self.imag_obs = None
 
     def _flatten_obs(self, obs_dict, verbose=False):
         """
@@ -99,7 +100,7 @@ class GymWrapper(Wrapper, Env):
         ob_lst = []
         for key in self.keys:
             # if key in obs_dict and key not in self.cameras:
-            if key in obs_dict:
+            if key in obs_dict and key not in self.cameras:
                 if verbose:
                     print("adding key: {}".format(key))
                 ob_lst.append(np.array(obs_dict[key]).flatten())
@@ -113,6 +114,15 @@ class GymWrapper(Wrapper, Env):
             np.array: Flattened environment observation space after reset occurs
         """
         ob_dict = self.env.reset()
+        imglist = []
+        if self.env.use_camera_obs:
+
+            for camera in self.cameras:
+                imglist.append(np.array(ob_dict[camera]))
+        # print("ob_dict len: {}\nob_dict: {}".format(len(ob_dict), ob_dict))
+        # only one camera so self.image_obs = imglist[0]
+        self.imag_obs = imglist
+
         self.state = self._flatten_obs(ob_dict)
         return self._flatten_obs(ob_dict)
 
@@ -134,7 +144,11 @@ class GymWrapper(Wrapper, Env):
         ob_dict, reward, done, info = self.env.step(action)
 
         # time.sleep(.002)
-        
+        imglist = []
+        if self.env.use_camera_obs:
+            for camera in self.cameras:
+                imglist.append(np.array(ob_dict[camera]))
+        self.imag_obs = imglist
         self.episode_reward += reward
         for key in self.keys:
             if key not in info:
@@ -146,8 +160,10 @@ class GymWrapper(Wrapper, Env):
 
         if done:
             self.writer.add_scalar('train_episode_reward', self.episode_reward, self.total_steps)
+            # self.writer.add_scalar('env_reward', self.compute_reward(1,1,1), self.total_steps)
+            print("train_episode_reward: {}".format(self.episode_reward))
             self.episode_reward = 0
-            
+
             # Clear the episode_info dictionary
             self.episode_info = dict()
         
@@ -155,7 +171,11 @@ class GymWrapper(Wrapper, Env):
         self.total_steps += 1
         self.replay_buffer.add(self.state, action, self.next_state, reward, done)
         self.state = self.next_state.copy()
+
         return self._flatten_obs(ob_dict), reward, done, info
+
+    def get_imginfo(self):
+        return self.imag_obs[0]
 
     def seed(self, seed=None):
         """

@@ -15,7 +15,7 @@ from run_robosuite_main import set_seed
 from stable_baselines3 import PPO, SAC, TD3
 
 if __name__ == '__main__':
-    path = 'results/2022/Wipe/PPO/Panda/fixed/PPO_seed_0_steps_500000/'
+    path = 'results/v2/Wipe/PPO/Panda/fixed/seed0/PPO_kp300_damping-ratio1/'
     parser = argparse.ArgumentParser()
     parser.add_argument("--env", type=str, default="Wipe")  # Door, Lift, NutAssembly, NutAssemblyRound,
     # NutAssemblySingle, NutAssemblySquare, PickPlace, PickPlaceBread, PickPlaceCan, PickPlaceCereal, PickPlaceMilk,
@@ -27,7 +27,7 @@ if __name__ == '__main__':
     parser.add_argument("--camera", type=str, default="frontview")  # frontview, birdview, agentview, sideview,
     # robot0_robotview, robot0_eye_in_hand
     parser.add_argument("--video_path", type=str, default="video.mp4")
-    parser.add_argument("--record_timesteps", type=str, default=500)
+    parser.add_argument("--record_timesteps", type=str, default=1500)
     parser.add_argument("--skip_frame", type=int, default=1)
     parser.add_argument("--seed", type=int, default=5)
     args = parser.parse_args()
@@ -49,11 +49,11 @@ if __name__ == '__main__':
         # camera_heights=args.height,
         # camera_widths=args.width,
         horizon=1000,
-        control_freq=20,
+        control_freq=60,
         controller_configs=controller_config
     )
     print("after make env============================================================================================")
-    from robosuite.wrappers.gym_wrapper import GymWrapper
+    from robosuite.wrappers.gym_wrapper_new import GymWrapper
 
     print("before wrapper-------------------------------------------------------------------------------------------")
     env = GymWrapper(env)

@@ -45,8 +45,8 @@ def run_learn(args, params, save_path=''):
 
         use_camera_obs=False,
         use_object_obs=True,
-        horizon=1000,
-        control_freq=50,
+        horizon=10000,
+        control_freq=500,
         reward_shaping=True,
         controller_configs=params
     )
@@ -144,7 +144,7 @@ if __name__ == '__main__':
     )
     parser.add_argument(
         '--seed',
-        default=0,
+        default=3,
         type=int
     )
     parser.add_argument(
