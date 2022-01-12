@@ -15,7 +15,7 @@ from run_robosuite_main import set_seed
 from stable_baselines3 import PPO, SAC, TD3
 
 if __name__ == '__main__':
-    path = 'results/v2/Wipe/PPO/Panda/fixed/seed0/PPO_kp300_damping-ratio1/'
+    path = 'new_results/v1/Wipe/Panda/fixed/kp_150/PPO/seed_3/'
     parser = argparse.ArgumentParser()
     parser.add_argument("--env", type=str, default="Wipe")  # Door, Lift, NutAssembly, NutAssemblyRound,
     # NutAssemblySingle, NutAssemblySquare, PickPlace, PickPlaceBread, PickPlaceCan, PickPlaceCereal, PickPlaceMilk,

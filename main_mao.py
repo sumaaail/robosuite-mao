@@ -45,8 +45,8 @@ def run_learn(args, params, save_path=''):
 
         use_camera_obs=False,
         use_object_obs=True,
-        horizon=10000,
-        control_freq=500,
+        horizon=args.horizon,
+        control_freq=args.control_freq,
         reward_shaping=True,
         controller_configs=params
     )
@@ -144,7 +144,7 @@ if __name__ == '__main__':
     )
     parser.add_argument(
         '--seed',
-        default=3,
+        default=17,
         type=int
     )
     parser.add_argument(
@@ -172,6 +172,16 @@ if __name__ == '__main__':
         default=1,
         type=int
     )
+    parser.add_argument(
+        '--horizon',
+        default=10000,
+        type=int
+    )
+    parser.add_argument(
+        '--control_freq',
+        default=20,
+        type=int
+    )
 
     args = parser.parse_args()
     warnings.simplefilter('default', RuntimeWarning)
@@ -187,6 +197,8 @@ if __name__ == '__main__':
         params_loaded = commentjson.load(f)
     params_loaded['impedance_mode'] = args.impedance_mode
     params_loaded['seed'] = args.seed
+    params_loaded['horizon'] = args.horizon
+    params_loaded['control_freq'] = args.control_freq
     if args.impedance_mode == 'variable':
         params_loaded['kp_limits'] = [args.kp_min, args.kp_max]
     elif args.impedance_mode == 'fixed':
@@ -195,7 +207,7 @@ if __name__ == '__main__':
     print("params :::", params_loaded)
 
     # save path
-    save_path_env_name = 'new_results/v1/'+args.env_name+'/'
+    save_path_env_name = 'new_results/v3/'+args.env_name+'/'
     # save_path = os.path.join(save_path_env_name, args.alg)
     save_path = os.path.join(save_path_env_name, args.robot)
     save_path = os.path.join(save_path, args.impedance_mode)
@@ -203,7 +215,8 @@ if __name__ == '__main__':
         save_path = os.path.join(save_path, 'kp_{}'.format(args.kp))
     elif args.impedance_mode == 'variable':
         save_path = os.path.join(save_path, 'kp_limits_[{} {}]'.format(args.kp_min, args.kp_max))
-    # save_path = os.path.join(save_path, 'seed'+str(args.seed))
+    save_path = os.path.join(save_path, 'horizon_{}'.format(args.horizon))
+    save_path = os.path.join(save_path, 'control_freq_{}'.format(args.control_freq))
 
     if not os.path.exists(save_path):
         os.makedirs(save_path)
