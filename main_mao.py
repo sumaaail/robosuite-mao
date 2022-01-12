@@ -179,7 +179,7 @@ if __name__ == '__main__':
     )
     parser.add_argument(
         '--control_freq',
-        default=20,
+        default=500,
         type=int
     )
 
