@@ -1,5 +1,5 @@
 import time
-from types import Union
+from typing import Union
 
 import numpy as np
 from stable_baselines3.common.monitor import Monitor
