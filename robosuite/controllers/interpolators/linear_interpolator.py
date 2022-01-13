@@ -45,7 +45,7 @@ class LinearInterpolator(Interpolator):
                                                                     # not implemented yet- TODO)
         self.set_states(dim=ndim, ori=ori_interpolate) 
 
-        print("============------use linear interpolation------==============")
+        # print("============------use linear interpolation------==============")
     def set_states(self, dim=None, ori=None):
         """
         Updates self.dim and self.ori_interpolate. 

@@ -15,9 +15,9 @@ from run_robosuite_main import set_seed
 from stable_baselines3 import PPO, SAC, TD3
 
 if __name__ == '__main__':
-    path = 'new_results/v1/Wipe/Panda/fixed/kp_150/PPO/seed_3/'
+    path = 'new_results/v0/Door/PPO/Panda/fixed/seed_0/'
     parser = argparse.ArgumentParser()
-    parser.add_argument("--env", type=str, default="Wipe")  # Door, Lift, NutAssembly, NutAssemblyRound,
+    parser.add_argument("--env", type=str, default="Door")  # Door, Lift, NutAssembly, NutAssemblyRound,
     # NutAssemblySingle, NutAssemblySquare, PickPlace, PickPlaceBread, PickPlaceCan, PickPlaceCereal, PickPlaceMilk,
     # PickPlaceSingle, Stack, TwoArmHandover, TwoArmLift, TwoArmPegInHole, Wipe
     parser.add_argument("--robots", nargs="+", type=str, default="Panda")  # Panda, Sawyer, Baxter
@@ -27,16 +27,23 @@ if __name__ == '__main__':
     parser.add_argument("--camera", type=str, default="frontview")  # frontview, birdview, agentview, sideview,
     # robot0_robotview, robot0_eye_in_hand
     parser.add_argument("--video_path", type=str, default="video.mp4")
-    parser.add_argument("--record_timesteps", type=str, default=1500)
+    parser.add_argument("--record_timesteps", type=str, default=500)
     parser.add_argument("--skip_frame", type=int, default=1)
     parser.add_argument("--seed", type=int, default=5)
+    parser.add_argument("--horizon", type=int, default=10000)
+    parser.add_argument("--control_freq", type=int, default=20)
     args = parser.parse_args()
 
     # load controller from its path0000000000000000000000h
     controller_path = os.path.join(os.path.dirname(__file__), path+'params.json')
     with open(controller_path) as f:
         controller_config = json.load(f)
-
+    if 'seed' not in controller_config.keys():
+        controller_config['seed'] = args.seed
+    if 'horizon' not in controller_config.keys():
+        controller_config['horizon'] = args.horizon
+    if 'control_freq' not in controller_config.keys():
+        controller_config['control_freq'] = args.control_freq
     set_seed(controller_config['seed'])
     env = suite.make(
         args.env,
@@ -48,8 +55,8 @@ if __name__ == '__main__':
         camera_names=args.camera,
         # camera_heights=args.height,
         # camera_widths=args.width,
-        horizon=1000,
-        control_freq=60,
+        horizon=controller_config['horizon'],
+        control_freq=controller_config['control_freq'],
         controller_configs=controller_config
     )
     print("after make env============================================================================================")
@@ -80,7 +87,7 @@ if __name__ == '__main__':
     elif controller_config['impedance_mode'] == 'variable':
         video_path = os.path.join(video_path, '{}_{}_{}_{}_{}_{}_video.mp4'.format(args.env, args.alg, controller_config['impedance_mode'], controller_config['kp_limits'], controller_config['seed'], args.camera))
 
-    writer = imageio.get_writer(video_path, fps=20)
+    writer = imageio.get_writer(video_path, fps=60)
 
     frames = []
     if env.use_camera_obs:

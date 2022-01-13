@@ -67,6 +67,7 @@ def run_learn(args, params, save_path=''):
             params['alg_params']['policy_type'],
             env,
             # tensorboard_log=save_path,
+            verbose=1,
             **actor_options)
     elif args.alg == 'SAC':
         model = SAC(
@@ -98,11 +99,12 @@ def run_learn(args, params, save_path=''):
         raise NotImplementedError
 
     print("Learning and recording to: {}".format(run_save_path))
-    model.learn(callback=learn_callback, total_timesteps=total_timesteps)
+    from callback_for_save_best import SaveOnBestEpisodeRewardCallback
+    callback = SaveOnBestEpisodeRewardCallback(check_freq=1000, log_dir=run_save_path)
+    model.learn(callback=callback, total_timesteps=total_timesteps)
 
     model_save_path = os.path.join(run_save_path, 'model')
     model.save(model_save_path)
-
 
 def set_seed(seed):
     torch.manual_seed(seed)
@@ -179,7 +181,7 @@ if __name__ == '__main__':
     )
     parser.add_argument(
         '--control_freq',
-        default=500,
+        default=20,
         type=int
     )
 
@@ -207,7 +209,7 @@ if __name__ == '__main__':
     print("params :::", params_loaded)
 
     # save path
-    save_path_env_name = 'new_results/v3/'+args.env_name+'/'
+    save_path_env_name = 'new_results/v5/'+args.env_name+'/'
     # save_path = os.path.join(save_path_env_name, args.alg)
     save_path = os.path.join(save_path_env_name, args.robot)
     save_path = os.path.join(save_path, args.impedance_mode)
