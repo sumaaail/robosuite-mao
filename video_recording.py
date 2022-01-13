@@ -15,9 +15,9 @@ from run_robosuite_main import set_seed
 from stable_baselines3 import PPO, SAC, TD3
 
 if __name__ == '__main__':
-    path = 'new_results/v0/Door/PPO/Panda/fixed/seed_0/'
+    path = 'new_results/v0/Wipe/PPO/Panda/fixed/PPO_kp200_damping-ratio1/'
     parser = argparse.ArgumentParser()
-    parser.add_argument("--env", type=str, default="Door")  # Door, Lift, NutAssembly, NutAssemblyRound,
+    parser.add_argument("--env", type=str, default="Wipe")  # Door, Lift, NutAssembly, NutAssemblyRound,
     # NutAssemblySingle, NutAssemblySquare, PickPlace, PickPlaceBread, PickPlaceCan, PickPlaceCereal, PickPlaceMilk,
     # PickPlaceSingle, Stack, TwoArmHandover, TwoArmLift, TwoArmPegInHole, Wipe
     parser.add_argument("--robots", nargs="+", type=str, default="Panda")  # Panda, Sawyer, Baxter
@@ -27,7 +27,7 @@ if __name__ == '__main__':
     parser.add_argument("--camera", type=str, default="frontview")  # frontview, birdview, agentview, sideview,
     # robot0_robotview, robot0_eye_in_hand
     parser.add_argument("--video_path", type=str, default="video.mp4")
-    parser.add_argument("--record_timesteps", type=str, default=500)
+    parser.add_argument("--record_timesteps", type=str, default=1000)
     parser.add_argument("--skip_frame", type=int, default=1)
     parser.add_argument("--seed", type=int, default=5)
     parser.add_argument("--horizon", type=int, default=10000)

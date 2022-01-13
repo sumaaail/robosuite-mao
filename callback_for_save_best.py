@@ -2,10 +2,7 @@ import os
 
 import gym
 import numpy as np
-import matplotlib.pyplot as plt
-import pandas as pd
 
-from stable_baselines3 import TD3
 from stable_baselines3.common import results_plotter
 from stable_baselines3.common.monitor import Monitor
 from stable_baselines3.common.results_plotter import load_results, ts2xy, plot_results
