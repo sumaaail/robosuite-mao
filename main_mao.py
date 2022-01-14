@@ -25,7 +25,9 @@ def run_learn(args, params, save_path=''):
     # elif args.impedance_mode == 'fixed':
     #     run_save_path = os.path.join(save_path, args.alg + '_kp{}'.format(args.kp, args.damping_ratio))
     run_save_path = os.path.join(save_path, args.alg)
+    run_save_path = os.path.join(run_save_path, 'batch_size_'+str(args.batch_size))
     run_save_path = os.path.join(run_save_path, 'seed_'+str(args.seed))
+
     os.makedirs(run_save_path, exist_ok=True)
 
     # save parameters in params to params_save_path
@@ -67,6 +69,9 @@ def run_learn(args, params, save_path=''):
         model = PPO(
             params['alg_params']['policy_type'],
             env,
+            batch_size=args.batch_size,
+            seed=args.ppo_seed,
+            n_epochs=args.n_epochs,
             # tensorboard_log=save_path,
             verbose=1,
             **actor_options)
@@ -186,6 +191,25 @@ if __name__ == '__main__':
         type=int
     )
 
+    # PPO params
+    parser.add_argument(
+        '--batch_size',
+        default=64,
+        type=int
+    )
+    parser.add_argument(
+        '--n_epochs',
+        default=10,
+        type=int
+    )
+    parser.add_argument(
+        '--ppo_seed',
+        default=None,
+        type=int
+    )
+
+
+
     args = parser.parse_args()
     warnings.simplefilter('default', RuntimeWarning)
 
@@ -212,14 +236,14 @@ if __name__ == '__main__':
     # save path
     save_path_env_name = 'new_results/v5/'+args.env_name+'/'
     # save_path = os.path.join(save_path_env_name, args.alg)
-    save_path = os.path.join(save_path_env_name, args.robot)
-    save_path = os.path.join(save_path, args.impedance_mode)
-    if args.impedance_mode == 'fixed':
-        save_path = os.path.join(save_path, 'kp_{}'.format(args.kp))
-    elif args.impedance_mode == 'variable':
-        save_path = os.path.join(save_path, 'kp_limits_[{} {}]'.format(args.kp_min, args.kp_max))
+    # save_path = os.path.join(save_path_env_name, args.robot)
+    save_path = os.path.join(save_path_env_name, args.impedance_mode)
+    # if args.impedance_mode == 'fixed':
+    #     save_path = os.path.join(save_path, 'kp_{}'.format(args.kp))
+    # elif args.impedance_mode == 'variable':
+    #     save_path = os.path.join(save_path, 'kp_limits_[{} {}]'.format(args.kp_min, args.kp_max))
     save_path = os.path.join(save_path, 'horizon_{}'.format(args.horizon))
-    save_path = os.path.join(save_path, 'control_freq_{}'.format(args.control_freq))
+    # save_path = os.path.join(save_path, 'control_freq_{}'.format(args.control_freq))
 
     if not os.path.exists(save_path):
         os.makedirs(save_path)
