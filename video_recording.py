@@ -116,7 +116,7 @@ def video_recording(path_for_record):
 if __name__ == '__main__':
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("--env", type=str, default="Door")  # Door, Lift, NutAssembly, NutAssemblyRound,
+    parser.add_argument("--env", type=str, default="Wipe")  # Door, Lift, NutAssembly, NutAssemblyRound,
     # NutAssemblySingle, NutAssemblySquare, PickPlace, PickPlaceBread, PickPlaceCan, PickPlaceCereal, PickPlaceMilk,
     # PickPlaceSingle, Stack, TwoArmHandover, TwoArmLift, TwoArmPegInHole, Wipe
     parser.add_argument("--robots", nargs="+", type=str, default="Panda")  # Panda, Sawyer, Baxter
@@ -132,5 +132,6 @@ if __name__ == '__main__':
     parser.add_argument("--horizon", type=int, default=1000)
     parser.add_argument("--control_freq", type=int, default=20)
     args = parser.parse_args()
-    for dir in list_all_subdir('/home/sumail/robosuite/new_results'):
-        video_recording(dir)
+    # for dir in list_all_subdir('new_results/'):
+    #     video_recording('new_results/v2/Wipe/Panda/fixed/kp_150/PPO/seed_17_1000_20/')
+    video_recording('new_results/v2/Wipe/Panda/fixed/kp_150/PPO/seed_17_1000_20/')
