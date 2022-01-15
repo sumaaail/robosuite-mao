@@ -12,5 +12,8 @@ def ListAllSubdir(root_dir):
 
 if __name__ == '__main__':
     root_dir = 'new_results/v5/Wipe/'
-    for i in ListAllSubdir(root_dir):
-        print(i)
+    # for i in ListAllSubdir(root_dir):
+    #     print(i)
+    a = ()
+    if not a:
+        print("asd")

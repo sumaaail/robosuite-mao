@@ -19,13 +19,14 @@ class SaveOnBestEpisodeRewardCallback(BaseCallback):
         super(SaveOnBestEpisodeRewardCallback, self).__init__(verbose)
         self.check_freq = check_freq
         self.log_dir = log_dir
-        self.save_path = os.path.join(log_dir, 'best_model')
+        self.save_path = os.path.join(log_dir, 'best_model.zip')
         self.best_mean_reward = -np.inf
 
     def _init_callback(self)->None:
         # create folder if necessary
-        if self.save_path is not None:
-            os.makedirs(self.save_path, exist_ok=True)
+        # if self.save_path is not None:
+        #     os.makedirs(self.save_path, exist_ok=True)
+        pass
 
     def _on_step(self) -> bool:
         if self.n_calls % self.check_freq == 0:

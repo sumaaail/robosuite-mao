@@ -59,7 +59,7 @@ def run_learn(args, params, save_path=''):
     from robosuite.wrappers.gym_wrapper_new import GymWrapper
     from monitor4wrapper import Monitor4wrapper
     env = GymWrapper(env, logdir=run_save_path)
-    env = Monitor4wrapper(env, run_save_path)
+    env = Monitor4wrapper(env, run_save_path, extra_print_key=('action_space',))
     # if need this reset?
     # obs = env.reset()
     # print("obs: {}".format(len(obs)))
