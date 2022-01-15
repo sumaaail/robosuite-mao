@@ -18,9 +18,9 @@ from stable_baselines3 import PPO, SAC, TD3
 def list_all_subdir(root_dir):
     for root, ds, fs in os.walk(root_dir):
         if fs != [] and ds == []:
-            if 'Door' in str.split(root, os.sep):
+            if 'Door' not in str.split(root, os.sep):
                 for f in fs:
-                    if f.endswith('.pkl'):
+                    if f.endswith('.json'):
                         yield root + '/'
 
 
@@ -63,7 +63,7 @@ def video_recording(path_for_record):
     env = GymWrapper(env)
     # print("after wrapper==============================================================================================")
 
-    model_path = os.path.join(os.path.dirname(__file__), path + 'model_checkpoint_0.pkl')
+    model_path = os.path.join(os.path.dirname(__file__), path + 'best_model.zip')
     if args.alg == "SAC":
         model = SAC.load(model_path)
     elif args.alg == "PPO":
@@ -132,6 +132,6 @@ if __name__ == '__main__':
     parser.add_argument("--horizon", type=int, default=1000)
     parser.add_argument("--control_freq", type=int, default=20)
     args = parser.parse_args()
-    # for dir in list_all_subdir('new_results/'):
-    #     video_recording('new_results/v2/Wipe/Panda/fixed/kp_150/PPO/seed_17_1000_20/')
-    video_recording('new_results/v2/Wipe/Panda/fixed/kp_150/PPO/seed_17_1000_20/')
+    for dir in list_all_subdir('new_results/v5/Wipe/'):
+        video_recording(dir)
+    # video_recording('new_results/v2/Wipe/Panda/fixed/kp_150/PPO/seed_17_1000_20/')
