@@ -238,10 +238,10 @@ if __name__ == '__main__':
     # save_path = os.path.join(save_path_env_name, args.alg)
     # save_path = os.path.join(save_path_env_name, args.robot)
     save_path = os.path.join(save_path_env_name, args.impedance_mode)
-    # if args.impedance_mode == 'fixed':
-    #     save_path = os.path.join(save_path, 'kp_{}'.format(args.kp))
-    # elif args.impedance_mode == 'variable':
-    #     save_path = os.path.join(save_path, 'kp_limits_[{} {}]'.format(args.kp_min, args.kp_max))
+    if args.impedance_mode == 'fixed':
+        save_path = os.path.join(save_path, 'kp_{}'.format(args.kp))
+    elif args.impedance_mode == 'variable':
+        save_path = os.path.join(save_path, 'kp_limits_[{} {}]'.format(args.kp_min, args.kp_max))
     save_path = os.path.join(save_path, 'horizon_{}'.format(args.horizon))
     # save_path = os.path.join(save_path, 'control_freq_{}'.format(args.control_freq))
 
