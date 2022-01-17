@@ -44,6 +44,10 @@ class Monitor4wrapper(Monitor):
                 self.results_writer.write_row(ep_info)
             if self.extra_print_key:
                 self.extra_logger.writerow({"action_space": action})
+                total_force = np.linalg.norm(np.array(self.robots[0].recent_ee_forcetorques.current))
+                wipe_task_force = np.linalg.norm(np.array(self.robots[0].recent_ee_forcetorques.current[:3]))
+                self.extra_logger.writerow({"total_force": total_force})
+                self.extra_logger.writerow({"wipe_task_force": wipe_task_force})
                 self.extra_log_handler.flush()
             info['episode'] = ep_info
         self.total_steps += 1

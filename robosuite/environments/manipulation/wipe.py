@@ -27,10 +27,10 @@ DEFAULT_WIPE_CONFIG = {
     "table_friction_std": 0,                        # Standard deviation to sample different friction parameters for the table each episode
     "table_height": 0.0,                            # Additional height of the table over the default location
     "table_height_std": 0.0,                        # Standard deviation to sample different heigths of the table each episode
-    "line_width": 0.02,                             # Width of the line to wipe (diameter of the pegs)
+    "line_width": 0.04,                             # Width of the line to wipe (diameter of the pegs)
     "two_clusters": False,                          # if the dirt to wipe is one continuous line or two
     "coverage_factor": 0.6,                         # how much of the table surface we cover
-    "num_markers": 200,                             # How many particles of dirt to generate in the environment
+    "num_markers": 100,                             # How many particles of dirt to generate in the environment
 
     # settings for thresholds
     "contact_threshold": 1.0,                       # Minimum eef force to qualify as contact [N]
@@ -179,6 +179,7 @@ class Wipe(SingleArmEnv):
         task_config=None,
     ):
         # Assert that the gripper type is None
+        self.total_force = None
         assert gripper_types == "WipingGripper",\
             "Tried to specify gripper other than WipingGripper in Wipe environment!"
 
@@ -234,7 +235,7 @@ class Wipe(SingleArmEnv):
         # Scale reward if desired (see reward method for details)
         self.reward_normalization_factor = horizon / \
             (self.num_markers * self.unit_wiped_reward +
-             horizon * (self.wipe_contact_reward + self.task_complete_reward))
+             horizon * self.wipe_contact_reward + self.task_complete_reward)
 
         # ee resets
         self.ee_force_bias = np.zeros(3)

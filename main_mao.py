@@ -59,7 +59,7 @@ def run_learn(args, params, save_path=''):
     from robosuite.wrappers.gym_wrapper_new import GymWrapper
     from monitor4wrapper import Monitor4wrapper
     env = GymWrapper(env, logdir=run_save_path)
-    env = Monitor4wrapper(env, run_save_path, extra_print_key=('action_space',))
+    env = Monitor4wrapper(env, run_save_path, extra_print_key=('action_space', 'total_force', 'wipe_task_force'))
     # if need this reset?
     # obs = env.reset()
     # print("obs: {}".format(len(obs)))
@@ -182,7 +182,7 @@ if __name__ == '__main__':
     )
     parser.add_argument(
         '--horizon',
-        default=10000,
+        default=1000,
         type=int
     )
     parser.add_argument(
@@ -234,10 +234,10 @@ if __name__ == '__main__':
     print("params :::", params_loaded)
 
     # save path
-    save_path_env_name = 'new_results/v6/'+args.env_name+'/'
+    save_path_env_name = 'new_results/v7/'+args.env_name+'/'
     # save_path = os.path.join(save_path_env_name, args.alg)
-    # save_path = os.path.join(save_path_env_name, args.robot)
-    save_path = os.path.join(save_path_env_name, args.impedance_mode)
+    save_path = os.path.join(save_path_env_name, args.controller_name)
+    save_path = os.path.join(save_path, args.impedance_mode)
     if args.impedance_mode == 'fixed':
         save_path = os.path.join(save_path, 'kp_{}'.format(args.kp))
     elif args.impedance_mode == 'variable':
