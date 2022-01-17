@@ -216,7 +216,7 @@ if __name__ == '__main__':
     # load parameters
     param_dir = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'params/params')
     print("param_dir: {}".format(param_dir))
-    param_file_name = 'osc_pose.json'
+    param_file_name = args.controller_name.lower()+'.json'
     param_file = os.path.join(param_dir, param_file_name)
 
     print("param_file: {}".format(param_file))
@@ -234,7 +234,7 @@ if __name__ == '__main__':
     print("params :::", params_loaded)
 
     # save path
-    save_path_env_name = 'new_results/v7/'+args.env_name+'/'
+    save_path_env_name = 'new_results/v8/'+args.env_name+'/'
     # save_path = os.path.join(save_path_env_name, args.alg)
     save_path = os.path.join(save_path_env_name, args.controller_name)
     save_path = os.path.join(save_path, args.impedance_mode)

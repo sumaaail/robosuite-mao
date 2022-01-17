@@ -14,7 +14,4 @@ if __name__ == '__main__':
     root_dir = 'new_results/v5/Wipe/'
     # for i in ListAllSubdir(root_dir):
     #     print(i)
-    EXT = "monitor.csv"
-    a = ()
-    if not a:
-        print(f"askjdabg*{EXT}")
+    print("OSC_POSE".lower()+".json")

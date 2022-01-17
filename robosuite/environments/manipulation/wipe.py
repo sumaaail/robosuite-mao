@@ -235,7 +235,7 @@ class Wipe(SingleArmEnv):
         # Scale reward if desired (see reward method for details)
         self.reward_normalization_factor = horizon / \
             (self.num_markers * self.unit_wiped_reward +
-             horizon * self.wipe_contact_reward + self.task_complete_reward)
+             horizon * (self.wipe_contact_reward + self.task_complete_reward))
 
         # ee resets
         self.ee_force_bias = np.zeros(3)
