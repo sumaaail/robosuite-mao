@@ -49,7 +49,7 @@ def run_learn(args, params, save_path=''):
         use_object_obs=True,
         horizon=args.horizon,
         control_freq=args.control_freq,
-        reward_shaping=True,
+        reward_shaping=False,
         controller_configs=params
     )
 
@@ -59,7 +59,7 @@ def run_learn(args, params, save_path=''):
     from robosuite.wrappers.gym_wrapper_new import GymWrapper
     from monitor4wrapper import Monitor4wrapper
     env = GymWrapper(env, logdir=run_save_path)
-    env = Monitor4wrapper(env, run_save_path, extra_print_key=('action_space', 'total_force', 'wipe_task_force'))
+    env = Monitor4wrapper(env, run_save_path, extra_print_key=('action_space',))
     # if need this reset?
     # obs = env.reset()
     # print("obs: {}".format(len(obs)))
@@ -167,7 +167,7 @@ if __name__ == '__main__':
     )
     parser.add_argument(
         '--kp_min',
-        default=0,
+        default=10,
         type=int
     )
     parser.add_argument(
@@ -234,7 +234,7 @@ if __name__ == '__main__':
     print("params :::", params_loaded)
 
     # save path
-    save_path_env_name = 'new_results/v8/'+args.env_name+'/'
+    save_path_env_name = 'new_results/v9/'+args.env_name+'/'
     # save_path = os.path.join(save_path_env_name, args.alg)
     save_path = os.path.join(save_path_env_name, args.controller_name)
     save_path = os.path.join(save_path, args.impedance_mode)

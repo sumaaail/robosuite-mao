@@ -102,11 +102,11 @@ def video_recording(path_for_record):
         for i in range(args.record_timesteps):
             action, _states = model.predict(obs, deterministic=True)
             obs, reward, done, info = env.step(action)
-            print("action: {}".format(action))
-            print("info: {}".format(info))
-            # if i % args.skip_frame == 0:
-            #     frame = np.array(env.get_imginfo())
-            #     writer.append_data(frame)
+            # print("action: {}".format(action))
+            # print("info: {}".format(info))
+            if i % args.skip_frame == 0:
+                frame = np.array(env.get_imginfo())
+                writer.append_data(frame)
                 # print("saving frame #{}".format(i))
             if done:
                 break
@@ -133,6 +133,6 @@ if __name__ == '__main__':
     parser.add_argument("--horizon", type=int, default=1000)
     parser.add_argument("--control_freq", type=int, default=20)
     args = parser.parse_args()
-    for dir in list_all_subdir('new_results/v6/Wipe/variable/kp_limits0_300/horizon_1000/'):
+    for dir in list_all_subdir('new_results/v8/'):
         video_recording(dir)
     # video_recording('new_results/v2/Wipe/Panda/fixed/kp_150/PPO/seed_17_1000_20/')

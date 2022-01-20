@@ -128,7 +128,7 @@ class Door(SingleArmEnv):
         use_camera_obs=True,
         use_object_obs=True,
         reward_scale=1.0,
-        reward_shaping=False,
+        reward_shaping=True,
         placement_initializer=None,
         has_renderer=False,
         has_offscreen_renderer=True,
