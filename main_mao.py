@@ -49,7 +49,8 @@ def run_learn(args, params, save_path=''):
         use_object_obs=True,
         horizon=args.horizon,
         control_freq=args.control_freq,
-        reward_shaping=False,
+        reward_shaping=True,
+        reward_scale=None,
         controller_configs=params
     )
 
