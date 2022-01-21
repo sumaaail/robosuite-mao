@@ -108,7 +108,6 @@ class SingleArm(Manipulator):
                                            'controllers/config/{}.json'.format(
                                                self.robot_model.default_controller_config))
             self.controller_config = load_controller_config(custom_fpath=controller_path)
-
         # Assert that the controller config is a dict file:
         #             NOTE: "type" must be one of: {JOINT_POSITION, JOINT_TORQUE, JOINT_VELOCITY,
         #                                           OSC_POSITION, OSC_POSE, IK_POSE}

@@ -311,6 +311,7 @@ class Wipe(SingleArmEnv):
         Returns:
             float: reward value
         """
+        # print("action in wipe={}".format(action))
         reward = 0
 
         total_force_ee = np.linalg.norm(np.array(self.robots[0].recent_ee_forcetorques.current[:3]))

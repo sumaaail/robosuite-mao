@@ -1,4 +1,5 @@
 import os
+import sys
 
 
 def ListAllSubdir(root_dir):
@@ -11,7 +12,7 @@ def ListAllSubdir(root_dir):
 
 
 if __name__ == '__main__':
-    root_dir = 'new_results/v5/Wipe/'
-    # for i in ListAllSubdir(root_dir):
-    #     print(i)
-    print("OSC_POSE".lower()+".json")
+    print(sys._getframe().f_code.co_filename)
+    print(sys._getframe(0).f_code.co_filename)
+    print(sys._getframe().f_lineno)
+    print(sys._getframe(0).f_lineno)

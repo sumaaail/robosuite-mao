@@ -1,3 +1,5 @@
+import sys
+
 from robosuite.controllers.base_controller import Controller
 from robosuite.utils.control_utils import *
 import numpy as np
@@ -129,6 +131,7 @@ class JointPositionController(Controller):
         # kp and kd limits
         self.kp_min = self.nums2array(kp_limits[0], self.control_dim)
         self.kp_max = self.nums2array(kp_limits[1], self.control_dim)
+
         self.damping_ratio_min = self.nums2array(damping_ratio_limits[0], self.control_dim)
         self.damping_ratio_max = self.nums2array(damping_ratio_limits[1], self.control_dim)
 
@@ -174,6 +177,7 @@ class JointPositionController(Controller):
         Raises:
             AssertionError: [Invalid action dimension size]
         """
+        # print("action: {}".format(action))
         # Update state
         self.update()
 
