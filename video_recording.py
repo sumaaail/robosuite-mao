@@ -133,6 +133,6 @@ if __name__ == '__main__':
     parser.add_argument("--horizon", type=int, default=1000)
     parser.add_argument("--control_freq", type=int, default=20)
     args = parser.parse_args()
-    for dir in list_all_subdir('new_results/v8/'):
+    for dir in list_all_subdir('new_results/v9/'):
         video_recording(dir)
     # video_recording('new_results/v2/Wipe/Panda/fixed/kp_150/PPO/seed_17_1000_20/')

@@ -148,7 +148,7 @@ if __name__ == '__main__':
     )
     parser.add_argument(
         '--controller_name',
-        default='OSC_POSE',
+        default='JOINT_POSITION',
         type=str
     )
     parser.add_argument(
@@ -179,6 +179,16 @@ if __name__ == '__main__':
     parser.add_argument(
         '--damping_ratio',
         default=1,
+        type=int
+    )
+    parser.add_argument(
+        '--damping_max',
+        default=10,
+        type=int
+    )
+    parser.add_argument(
+        '--damping_min',
+        default=0.3,
         type=int
     )
     parser.add_argument(
@@ -223,26 +233,32 @@ if __name__ == '__main__':
     print("param_file: {}".format(param_file))
     with open(param_file) as f:
         params_loaded = commentjson.load(f)
-    params_loaded['impedance_mode'] = args.impedance_mode
+
     params_loaded['seed'] = args.seed
     params_loaded['horizon'] = args.horizon
     params_loaded['control_freq'] = args.control_freq
-    if args.impedance_mode == 'variable':
-        params_loaded['kp_limits'] = [args.kp_min, args.kp_max]
-    elif args.impedance_mode == 'fixed':
-        params_loaded['kp'] = args.kp
-        params_loaded['damping_ratio'] = args.damping_ratio
+    if args.controller_name in ['OSC_POSE', 'OSC_POSITION', 'JOINT_POSITION']:
+        params_loaded['impedance_mode'] = args.impedance_mode
+        if args.impedance_mode == 'variable':
+            params_loaded['kp_limits'] = [args.kp_min, args.kp_max]
+            params_loaded['damping_ratio_limits'] = [args.damping_min, args.damping_max]
+        elif args.impedance_mode == 'fixed':
+            params_loaded['kp'] = args.kp
+            params_loaded['damping_ratio'] = args.damping_ratio
     print("params :::", params_loaded)
 
     # save path
-    save_path_env_name = 'new_results/v9/'+args.env_name+'/'
+    save_path_env_name = 'new_results/v10/'+args.env_name+'/'
     # save_path = os.path.join(save_path_env_name, args.alg)
     save_path = os.path.join(save_path_env_name, args.controller_name)
     save_path = os.path.join(save_path, args.impedance_mode)
     if args.impedance_mode == 'fixed':
-        save_path = os.path.join(save_path, 'kp_{}'.format(args.kp))
+        save_path = os.path.join(save_path, 'kp_{}_damping_{}'.format(args.kp, args.damping_ratio))
     elif args.impedance_mode == 'variable':
-        save_path = os.path.join(save_path, 'kp_limits{}_{}'.format(args.kp_min, args.kp_max))
+        save_path = os.path.join(save_path, 'kp_limits{}_{}_damping_limits{}_{}'.format(args.kp_min,
+                                                                                        args.kp_max,
+                                                                                        args.damping_min,
+                                                                                        args.damping_max))
     save_path = os.path.join(save_path, 'horizon_{}'.format(args.horizon))
     # save_path = os.path.join(save_path, 'control_freq_{}'.format(args.control_freq))
 
