@@ -164,32 +164,32 @@ if __name__ == '__main__':
     parser.add_argument(
         '--kp_max',
         default=300,
-        type=int
+        type=float
     )
     parser.add_argument(
         '--kp_min',
         default=10,
-        type=int
+        type=float
     )
     parser.add_argument(
         '--kp',
         default=150,
-        type=int
+        type=float
     )
     parser.add_argument(
         '--damping_ratio',
         default=1,
-        type=int
+        type=float
     )
     parser.add_argument(
         '--damping_max',
         default=10,
-        type=int
+        type=float
     )
     parser.add_argument(
         '--damping_min',
         default=0.3,
-        type=int
+        type=float
     )
     parser.add_argument(
         '--horizon',
