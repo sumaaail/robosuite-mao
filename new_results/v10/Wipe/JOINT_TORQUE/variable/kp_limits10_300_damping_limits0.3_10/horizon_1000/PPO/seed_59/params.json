@@ -1,0 +1,17 @@
+{
+    "alg_params": {
+        "actor_options": {},
+        "policy_type": "MlpPolicy"
+    },
+    "control_freq": 20,
+    "horizon": 1000,
+    "input_max": 1,
+    "input_min": -1,
+    "interpolation": null,
+    "output_max": 0.1,
+    "output_min": -0.1,
+    "ramp_ratio": 0.2,
+    "seed": 59,
+    "torque_limits": null,
+    "type": "JOINT_TORQUE"
+}

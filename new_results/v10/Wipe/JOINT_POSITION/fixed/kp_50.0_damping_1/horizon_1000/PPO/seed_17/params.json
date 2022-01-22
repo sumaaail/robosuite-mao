@@ -1,0 +1,28 @@
+{
+    "alg_params": {
+        "actor_options": {},
+        "policy_type": "MlpPolicy"
+    },
+    "control_freq": 20,
+    "damping_ratio": 1,
+    "damping_ratio_limits": [
+        0,
+        10
+    ],
+    "horizon": 1000,
+    "impedance_mode": "fixed",
+    "input_max": 1,
+    "input_min": -1,
+    "interpolation": null,
+    "kp": 50.0,
+    "kp_limits": [
+        0,
+        300
+    ],
+    "output_max": 0.05,
+    "output_min": -0.05,
+    "qpos_limits": null,
+    "ramp_ratio": 0.2,
+    "seed": 17,
+    "type": "JOINT_POSITION"
+}
