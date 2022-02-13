@@ -148,7 +148,7 @@ if __name__ == '__main__':
     )
     parser.add_argument(
         '--controller_name',
-        default='JOINT_POSITION',
+        default='OSC_POSE',
         type=str
     )
     parser.add_argument(
@@ -193,7 +193,7 @@ if __name__ == '__main__':
     )
     parser.add_argument(
         '--horizon',
-        default=1000,
+        default=500,
         type=int
     )
     parser.add_argument(
