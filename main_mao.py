@@ -248,7 +248,7 @@ if __name__ == '__main__':
     print("params :::", params_loaded)
 
     # save path
-    save_path_env_name = 'new_results/v10/'+args.env_name+'/'
+    save_path_env_name = 'new_results/v11/'+args.env_name+'/'
     # save_path = os.path.join(save_path_env_name, args.alg)
     save_path = os.path.join(save_path_env_name, args.controller_name)
     save_path = os.path.join(save_path, args.impedance_mode)
