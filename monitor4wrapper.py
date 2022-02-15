@@ -7,6 +7,7 @@ import numpy as np
 from stable_baselines3.common.monitor import Monitor, ResultsWriter
 from stable_baselines3.common.type_aliases import GymObs, GymStepReturn
 EXTRA_MONITOR = 'extra_info.csv'
+REWARD_MONITOR = 'reward_monitor.csv'
 
 class Monitor4wrapper(Monitor):
     def __init__(self,
@@ -19,6 +20,7 @@ class Monitor4wrapper(Monitor):
         self.extra_print_key = extra_print_key
         self.extra_log_handler = open(os.path.join(logdir, EXTRA_MONITOR), "wt")
         self.extra_logger = csv.DictWriter(self.extra_log_handler, fieldnames=extra_print_key)
+
 
     def reset(self, **kwargs) -> GymObs:
         self.rewards = []

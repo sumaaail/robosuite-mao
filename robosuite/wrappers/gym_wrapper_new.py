@@ -3,6 +3,8 @@ This file implements a wrapper for facilitating compatibility with OpenAI gym.
 This is useful when using these environments with code that assumes a gym-like 
 interface.
 """
+import csv
+import os
 
 import numpy as np
 from gym import spaces
@@ -85,6 +87,9 @@ class GymWrapper(Wrapper, Env):
         self.state = None
         self.next_state = None
         self.imag_obs = None
+        self.reward_recorder_handler = open(os.path.join(logdir, 'episode_reward.csv'), "wt")
+        self.reward_recorder = csv.DictWriter(self.reward_recorder_handler, ['step', 'reward'])
+        self.reward_recorder.writeheader()
 
     def _flatten_obs(self, obs_dict, verbose=False):
         """
@@ -161,7 +166,8 @@ class GymWrapper(Wrapper, Env):
         if done:
             self.writer.add_scalar('train_episode_reward', self.episode_reward, self.total_steps)
             # self.writer.add_scalar('env_reward', self.compute_reward(1,1,1), self.total_steps)
-            print("train_episode_reward: {}".format(self.episode_reward))
+            # print("train_episode_reward: {}".format(self.episode_reward))
+            self.reward_recorder.writerow({'step':self.total_steps, 'reward':self.episode_reward})
             self.episode_reward = 0
 
             # Clear the episode_info dictionary
